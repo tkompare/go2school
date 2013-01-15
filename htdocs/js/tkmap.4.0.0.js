@@ -132,7 +132,7 @@ function TkMap(Args)
 					MapOptions.styles.push 
 					(
 						{
-							stylers: [{ saturation: -99 }]
+							stylers: [{ saturation: -67 }]
 						},
 						{
 							featureType: "road.arterial",
