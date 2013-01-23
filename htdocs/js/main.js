@@ -6,6 +6,9 @@
 	var defaultLat = 41.85;
 	var defaultLng = -87.675;
 	var locnames = [];
+	var School = {};
+	School.LatLngs = [];
+	School.Markers = [];
 	
 	// The jQuery document.ready enclosure
 	$(function(){
@@ -47,7 +50,16 @@
 			success: function (ftdata) {
 				for (var i in ftdata.rows)
 				{
+					// Push to the location names array the name of the school
 					locnames.push(ftdata.rows[i][2]);
+					// Create the Google LatLng object
+					School.LatLngs[i] = new google.maps.LatLng(ftdata.rows[i][0],ftdata.rows[i][1]);
+					// Create the Markers for each school
+					School.Markers[i] = new google.maps.Marker({
+						position: School.LatLngs[i],
+						map: Map.Map
+						//icon:'/img/school.png'
+					});
 				}
 				// Set up the typeahead for the school names.
 				$('#school').typeahead({
