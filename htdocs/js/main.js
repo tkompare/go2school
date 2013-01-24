@@ -57,8 +57,9 @@
 					// Create the Markers for each school
 					School.Markers[i] = new google.maps.Marker({
 						position: School.LatLngs[i],
-						map: Map.Map
-						//icon:'/img/school.png'
+						map: Map.Map,
+						icon:'/img/blue.png',
+						shadow:'img/msmarker.shadow.png'
 					});
 				}
 				// Set up the typeahead for the school names.
