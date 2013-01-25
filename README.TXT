@@ -1,8 +1,9 @@
 INTRODUCTION
-This application was developed for the Chicago Public Schools (CDPH)
+I'm developing this application for the Chicago Public Schools (CPS)
 to help CPS parents and students know if there is school today (or
 tomorrow) and get to school on time, for a meeting, or pick up after
-school.
+school. The plan is to launch by the beginning of the 2013-2014 school
+year.
 
 BACKGROUND
 to come...
