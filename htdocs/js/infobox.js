@@ -715,6 +715,7 @@ InfoBox.prototype.open = function (map, anchor) {
   }
 
   this.setMap(map);
+  this.visible = true;
 
   if (this.div_) {
 
@@ -756,4 +757,6 @@ InfoBox.prototype.close = function () {
   }
 
   this.setMap(null);
+  this.visible = false;
+
 };

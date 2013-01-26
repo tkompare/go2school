@@ -18,22 +18,30 @@
 </head>
 <body>
 	<div class="row-fluid">
-		<div id="before-map" class="span12 padded">
-			<h2 class="center">Go To School<br><small>Find your way to a Chicago Public School</small></h2>
-			<div id="grp-school" class="control-group padded center" style="margin-bottom:2em; margin-top:3em">
-				<label class="control-label" for="school"><h4>What's the name of the school?</h4>
+		<div id="before-map" class="span12">
+			<h2 class="center">Go To School!</h2>
+			<div id="grp-school" class="control-group center" style="margin-bottom:2em; margin-top:3em">
+				<label class="control-label" for="school"><h4>What's the name of your school?</h4>
 				</label>
 				<div class="controls input-append">
-					<input id="school" class="span9" type="text" placeholder="Name of school" />
+					<input id="school" class="span10" type="text" placeholder="Name of school" />
 					<button id="btn-find-school" class="btn btn-primary" type="button">Find</button>
 				</div>
-				<span id="loadingmsg">Loading Data...</span>
+				<span id="loading" class="label">Loading Data...</span>
 			</div>
-			<div id="grp-location" class="control-group padded center" style="margin-bottom:2em; margin-top:3em">
+			<div id="grp-location" class="control-group center" style="margin-bottom:2em; margin-top:3em">
 				<label class="control-label" for="location"><h4>Where are you?&nbsp;&nbsp;<button id="btn-gps-location" class="btn btn-link btn-small" type="button">Find Me</button></h4></label>
 				<div class="controls input-append">
-					<input id="location" class="span9" type="text" placeholder="Enter an address" />
-					<button id="btn-search-location" class="btn btn-primary" type="button">Search</button>
+					<input id="location" class="span10" type="text" placeholder="Enter an address" />
+					<button id="btn-search-location" class="btn btn-primary" type="button">Find</button>
+				</div>
+			</div>
+			<div id="travel" style="margin-bottom:5em; margin-top:3em">
+				<h4 class="center">How are you getting there?</h4>
+				<div id="travel" class="padded" data-toggle="buttons-radio">
+					<span class="span4"><button class="btn btn-large btn-primary btn-block">Walking</button></span>
+					<span class="span4"><button class="btn btn-large btn-primary btn-block">CTA/Metra</button></span>
+					<span class="span4"><button class="btn btn-large btn-primary btn-block">Driving</button></span>
 				</div>
 			</div>
 		</div>
@@ -50,12 +58,12 @@
 	</div>
 	<div id="div-footer" class="row-fluid">
 		<hr>
-		<footer>
-			<div class="span6 padded">
+		<footer class="padded">
+			<div class="span4">
 				<p><a href="http://www.cps.edu">Chicago Public Schools</a></p>
 				<p><a href="tel:+17735531000">773.553.1000</a></p>
 			</div>
-			<div class="span6 padded">
+			<div class="span8">
 				<p class="pull-right muted"><small>This map was not developed by
 					the Chicago Public Schools (CPS) and CPS makes no representations as to the 
 					accuracy of the information provided by this map application. 
@@ -68,7 +76,7 @@
 		</footer>
 	</div>
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
-	<script>window.jQuery || document.write('<script src="js/jquery-1.8.3.min.js"><\/script>')</script>
+	<script>window.jQuery || document.write('<script src="js/jquery-1.9.0.min.js"><\/script>')</script>
 	<script src="//maps.googleapis.com/maps/api/js?key=AIzaSyDH5WuL3gKYVBWVqLr6g3PQffdZE-XhBUw&sensor=true" type="text/javascript"></script>
 	<script src="js/bootstrap.min.js"></script>
 	<!-- These four .js files rolled into 'main.min.js'

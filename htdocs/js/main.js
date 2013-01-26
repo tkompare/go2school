@@ -12,39 +12,42 @@
 	School.InfoBox = [];
 	School.InfoBoxText = [];
 	/**
-	* Factory method to open info boxes
+	* Factory method to open & close info boxes
 	* @param theMap
 	* @param theMarker
 	* @param theInfoWindow
 	* @returns {Function}
 	*/
-	School.openInfoBox = function(theMap,theMarker,theInfoBox) {
-		return function() { theInfoBox.open(theMap,theMarker); };
+	School.toggleInfoBox = function(theMap,theMarker,theInfoBox) {
+		return function(){
+			if(theInfoBox.visible)
+			{
+				theInfoBox.close(theMap,theMarker);
+			}
+			else
+			{
+				theInfoBox.open(theMap,theMarker);
+			}
+		};
 	};
-	School.closeInfoBox = function(theMap,theMarker,theInfoBox) {
-		return function() { theInfoBox.close(theMap,theMarker); };
-	};
-	
 	// The jQuery document.ready enclosure
 	$(function(){
 		
 		// Set up the loading message
-		$('#loadingmsg')
-			.hide()  // hide it initially
-			.ajaxStart(function() {
-				$(this).show();
-			})
-			.ajaxStop(function() {
-				$(this).hide();
-			})
-		;
+		$('#loading').hide();
+		$(document).ajaxStart(function() {
+			$('#loading').show();
+		})
+		.ajaxStop(function() {
+			$('#loading').hide();
+		});
 		
 		// The Google map base layer object
 		var Map = new TkMap({
 			domid:'map',
 			lat:defaultLat,
 			lng:defaultLng,
-			styles:'grey',
+			styles:'grey minlabels',
 			zoom:14
 		});
 		Map.initMap();
@@ -53,7 +56,7 @@
 		Map.setTouchScroll(true);
 		// Set Pan/Zoom Control
 		var PanZoomControlDiv = document.createElement('div');
-		var panZoomControl = new PanZoomControl(PanZoomControlDiv, Map.Map);
+		var panZoomControl = new PanZoomControl(PanZoomControlDiv);
 		PanZoomControlDiv.index = 1;
 		Map.Map.controls[google.maps.ControlPosition.TOP_RIGHT].push(PanZoomControlDiv);
 		// The FT query
@@ -80,7 +83,7 @@
 					School.Markers[i] = new google.maps.Marker({
 						position: School.LatLngs[i],
 						map: Map.Map,
-						icon:'/img/blue.png',
+						icon:'/img/orange.png',
 						shadow:'img/msmarker.shadow.png'
 					});
 					// Info boxes
@@ -100,18 +103,15 @@
 							,width: "160px"
 						}
 						,closeBoxMargin: "10px 2px 2px 2px"
-						,closeBoxURL: "http://www.google.com/intl/en_us/mapfiles/close.gif"
+						,closeBoxURL: "img/close.gif"
 						,infoBoxClearance: new google.maps.Size(1, 1)
-						,isHidden: false
+						,visible: false
 						,pane: "floatPane"
 						,enableEventPropagation: false
 					};
 					// Make the info boxes
 					School.InfoBox[i] = new InfoBox(options);
-					// Make the listeners for the info boxes
-					google.maps.event.addListener(School.Markers[i], 'mouseover', School.openInfoBox(Map.Map,School.Markers[i],School.InfoBox[i]));
-					google.maps.event.addListener(School.Markers[i], 'click', School.openInfoBox(Map.Map,School.Markers[i],School.InfoBox[i]));
-					google.maps.event.addListener(School.Markers[i], 'mouseout', School.closeInfoBox(Map.Map,School.Markers[i],School.InfoBox[i]));
+					School.InfoBox[i].onmap = 0;
 				}
 				// Set up the typeahead for the school names.
 				$('#school').typeahead({
@@ -134,7 +134,7 @@
 			console.log('centeronuser');
 		}
 		// Put a Pan/Zoom control on the map
-		function PanZoomControl(controlDiv, map) {
+		function PanZoomControl(controlDiv) {
 			// Set CSS styles for the DIV containing the control
 			// Setting padding to 5 px will offset the control
 			// from the edge of the map.
@@ -156,7 +156,7 @@
 			controlText.style.paddingRight = '.5em';
 			controlText.style.paddingTop = '.3em';
 			controlText.style.paddingBottom = '.3em';
-			controlText.innerHTML = 'Maximize';
+			controlText.innerHTML = 'Explore Map';
 			controlUI.appendChild(controlText);
 			// Setup the click event listeners.
 			google.maps.event.addDomListener(controlUI, 'click', function() {
@@ -173,6 +173,10 @@
 						Map.Map.setCenter(cntr);
 						google.maps.event.trigger(Map.Map, 'resize');
 					});
+					for(var i in School.Markers)
+					{
+						google.maps.event.addListener(School.Markers[i], 'click', School.toggleInfoBox(Map.Map,School.Markers[i],School.InfoBox[i]));
+					}
 				}
 				else
 				{
@@ -182,10 +186,14 @@
 					$('#before-map,#div-footer').show(750,function(){
 						$('#map-width').css('height','');
 						$('#map-ratio').css('margin-top','200px');
-						controlText.innerHTML = 'Maximize';
+						controlText.innerHTML = 'Explore Map';
 						Map.Map.setCenter(cntr);
 						google.maps.event.trigger(Map.Map, 'resize');
 					});
+					for(var i in School.Markers)
+					{
+						google.maps.event.clearListeners(School.Markers[i], 'click');
+					}
 				}
 			});
 		}
