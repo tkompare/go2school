@@ -7,6 +7,7 @@
 	var defaultLng = -87.675;
 	var locnames = [];
 	var School = {};
+	School.data = [];
 	School.LatLngs = [];
 	School.Markers = [];
 	School.InfoBox = [];
@@ -30,8 +31,18 @@
 			}
 		};
 	};
+	
+	//hide some stuff by default
+	$('#travel,#grp-mylocation').hide();
+	
 	// The jQuery document.ready enclosure
 	$(function(){
+		
+		// See if local storage has any values to fill in the form with
+		if($.jStorage.storageAvailable())
+		{
+			$('#school').val($.jStorage.get('school',''));
+		}
 		
 		// Set up the loading message
 		$('#loading').hide();
@@ -51,14 +62,15 @@
 			zoom:14
 		});
 		Map.initMap();
+		
 		// Pan/Zoom
 		Map.setPanZoom(false);
 		Map.setTouchScroll(true);
-		// Set Pan/Zoom Control
 		var PanZoomControlDiv = document.createElement('div');
 		var panZoomControl = new PanZoomControl(PanZoomControlDiv);
 		PanZoomControlDiv.index = 1;
 		Map.Map.controls[google.maps.ControlPosition.TOP_RIGHT].push(PanZoomControlDiv);
+		
 		// The FT query
 		var ftquery = encodeURIComponent("SELECT lat, lng, shortname, address, postalcode, phone, start, end, afterstart, afterend FROM 1QQu0GHzbkKk5OdAl2VaaY2sm1Ggoc8Vo5GfiGLI");
 		
@@ -73,8 +85,15 @@
 			url: fturl.join(''),
 			dataType: 'jsonp',
 			success: function (ftdata) {
+				// Copy the data to the School object
 				for (var i in ftdata.rows)
 				{
+					School.data[i] = [];
+					for(var j in ftdata.columns)
+					{
+						var colname = ftdata.columns[j];
+						School.data[i][colname] = ftdata.rows[i][j];
+					}
 					// Push to the location names array the name of the school
 					locnames.push(ftdata.rows[i][2]);
 					// Create the Google LatLng object
@@ -87,7 +106,7 @@
 						shadow:'img/msmarker.shadow.png'
 					});
 					// Info boxes
-					School.InfoBoxText[i] = '<div class="infoBox" style="border:1px solid rgb(0,0,0); margin-top:8px; background:rgb(255,189,136); padding:5px; font-size:80%;">'+
+					School.InfoBoxText[i] = '<div class="infoBox" style="border:2px solid rgb(0,0,0); margin-top:8px; background:rgb(255,140,0); padding:5px; font-size:80%;">'+
 					ftdata.rows[i][2]+'<br />'+
 					ftdata.rows[i][3]+'<br />'+
 					ftdata.rows[i][5]+'<br /></div>';
@@ -99,10 +118,10 @@
 						,zIndex: null
 						,boxStyle: {
 							background: "url('img/tipbox.gif') no-repeat"
-							,opacity: 0.95
+							,opacity: 0.9
 							,width: "160px"
 						}
-						,closeBoxMargin: "10px 2px 2px 2px"
+						,closeBoxMargin: "11px 4px 4px 4px"
 						,closeBoxURL: "img/close.gif"
 						,infoBoxClearance: new google.maps.Size(1, 1)
 						,visible: false
@@ -113,6 +132,8 @@
 					School.InfoBox[i] = new InfoBox(options);
 					School.InfoBox[i].onmap = 0;
 				}
+				// Try to center on school in school input 
+				centeronschool();
 				// Set up the typeahead for the school names.
 				$('#school').typeahead({
 					source:locnames,
@@ -126,13 +147,28 @@
 		
 		// Center the map on the school in the school name input
 		function centeronschool() {
-			console.log('centeronschool');
+			if($('#school').val() != '')
+			{
+				for(var i in School.data)
+				{
+					if(School.data[i].shortname == $('#school').val())
+					{
+						Map.Map.setCenter(School.LatLngs[i]);
+						School.InfoBox[i].open(Map.Map,School.Markers[i]);
+					}
+					else
+					{
+						School.InfoBox[i].close(Map.Map,School.Markers[i]);
+					}
+				}
+			}
 		}
 		
 		// Center the map on the user's location in the location input
-		function centeronuser() {
-			console.log('centeronuser');
+		function centeronmylocation() {
+			console.log('centeronmylocation');
 		}
+		
 		// Put a Pan/Zoom control on the map
 		function PanZoomControl(controlDiv) {
 			// Set CSS styles for the DIV containing the control
@@ -199,24 +235,34 @@
 		}
 		// LISTENERS -------------------------------------------------------------/
 		
+		// school input change
+		$('#school').change(function(){
+			if($.jStorage.storageAvailable())
+			{
+				$.jStorage.set('school', $('#school').val());
+			}
+			centeronschool();
+		});
+		
+		// school "next" button click
+		$('#school-next').click(function(){
+			$('#grp-school').hide();
+			$('#grp-mylocation').show();
+		});
+		
 		// school input onblur
 		$('#school').blur(function(){
 			centeronschool();
 		});
 		
-		// find school button click
-		$('#btn-find-school').click(function(){
-			centeronschool();
-		});
-		
-	// school input onblur
+		// location input onblur
 		$('#location').blur(function(){
-			centeronschool();
+			centeronmylocation();
 		});
 		
 		// find school button click
-		$('#btn-search-location').click(function(){
-			centeronschool();
+		$('#location-next').click(function(){
+			centeronmylocation();
 		});
 	});
 	

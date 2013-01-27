@@ -20,20 +20,24 @@
 	<div class="row-fluid">
 		<div id="before-map" class="span12">
 			<h2 class="center">Go To School!</h2>
-			<div id="grp-school" class="control-group center" style="margin-bottom:2em; margin-top:3em">
+			<div id="grp-school" class="control-group center padded" style="margin-bottom:2em; margin-top:3em">
 				<label class="control-label" for="school"><h4>What's the name of your school?</h4>
 				</label>
-				<div class="controls input-append">
+				<div class="controls">
 					<input id="school" class="span10" type="text" placeholder="Name of school" />
-					<button id="btn-find-school" class="btn btn-primary" type="button">Find</button>
+				</div>
+				<div id="next" class="center" style="margin-bottom:2em; margin-top:3em">
+					<button id="school-next" class="btn btn-large btn-primary">Next</button>
 				</div>
 				<span id="loading" class="label">Loading Data...</span>
 			</div>
-			<div id="grp-location" class="control-group center" style="margin-bottom:2em; margin-top:3em">
-				<label class="control-label" for="location"><h4>Where are you?&nbsp;&nbsp;<button id="btn-gps-location" class="btn btn-link btn-small" type="button">Find Me</button></h4></label>
-				<div class="controls input-append">
-					<input id="location" class="span10" type="text" placeholder="Enter an address" />
-					<button id="btn-search-location" class="btn btn-primary" type="button">Find</button>
+			<div id="grp-mylocation" class="control-group center padded" style="margin-bottom:2em; margin-top:3em">
+				<label class="control-label" for="mylocation"><h4>Where are you?&nbsp;&nbsp;<button id="btn-gps-location" class="btn btn-link btn-small" type="button">Find Me</button></h4></label>
+				<div class="controls">
+					<input id="mylocation" class="span10" type="text" placeholder="Enter an address" />
+				</div>
+				<div id="next" class="center" style="margin-bottom:2em; margin-top:3em">
+					<button id="location-next" class="btn btn-large btn-primary">Next</button>
 				</div>
 			</div>
 			<div id="travel" style="margin-bottom:5em; margin-top:3em">
@@ -79,12 +83,13 @@
 	<script>window.jQuery || document.write('<script src="js/jquery-1.9.0.min.js"><\/script>')</script>
 	<script src="//maps.googleapis.com/maps/api/js?key=AIzaSyDH5WuL3gKYVBWVqLr6g3PQffdZE-XhBUw&sensor=true" type="text/javascript"></script>
 	<script src="js/bootstrap.min.js"></script>
-	<!-- These four .js files rolled into 'main.min.js'
+	<!-- These six .js files rolled into 'main.min.js' -->
+		<script src="js/jquery.json-2.4.js"></script>
+		<script src="js/jstorage.js"></script>
 		<script src="js/touchtest.min.js"></script>
 		<script src="js/tkmap.4.0.0.js"></script>
 		<script src="js/infobox.js"></script>
 		<script src="js/main.js"></script>
-	-->
-	<script src="js/main.min.js"></script>
+<!-- <script src="js/main.min.js"></script> -->
 </body>
 </html>
