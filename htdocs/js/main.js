@@ -2,34 +2,47 @@
 (function(){
 	// Setup variables
 	//var touch = Modernizr.touch;
-	//var gps = navigator.geolocation;
-	var defaultLat = 41.85;
-	var defaultLng = -87.675;
+	var gps = navigator.geolocation;
+	var Default = {
+		lat:41.85,
+		lng:-87.675,
+		city:'Chicago',
+		state:'IL',
+		styles:'grey minlabels',
+		zoom:14
+	};
 	var locnames = [];
-	var School = {};
-	School.data = [];
-	School.LatLngs = [];
-	School.Markers = [];
-	School.InfoBox = [];
-	School.InfoBoxText = [];
-	/**
-	* Factory method to open & close info boxes
-	* @param theMap
-	* @param theMarker
-	* @param theInfoWindow
-	* @returns {Function}
-	*/
-	School.toggleInfoBox = function(theMap,theMarker,theInfoBox) {
-		return function(){
-			if(theInfoBox.visible)
-			{
-				theInfoBox.close(theMap,theMarker);
-			}
-			else
-			{
-				theInfoBox.open(theMap,theMarker);
-			}
-		};
+	var MyLocation = {
+		lat:null,
+		lng:null,
+		LatLng:null,
+		addressFromGoogle:null
+	};
+	var School = {
+		data:[],
+		LatLngs:[],
+		Markers:[],
+		InfoBox:[],
+		InfoBoxText:[],
+		/**
+		* Factory method to open & close info boxes
+		* @param theMap
+		* @param theMarker
+		* @param theInfoWindow
+		* @returns {Function}
+		*/
+		toggleInfoBox:function(theMap,theMarker,theInfoBox) {
+			return function(){
+				if(theInfoBox.visible)
+				{
+					theInfoBox.close(theMap,theMarker);
+				}
+				else
+				{
+					theInfoBox.open(theMap,theMarker);
+				}
+			};
+		}
 	};
 	
 	//hide some stuff by default
@@ -56,10 +69,10 @@
 		// The Google map base layer object
 		var Map = new TkMap({
 			domid:'map',
-			lat:defaultLat,
-			lng:defaultLng,
-			styles:'grey minlabels',
-			zoom:14
+			lat:Default.lat,
+			lng:Default.lng,
+			styles:Default.styles,
+			zoom:Default.zoom
 		});
 		Map.initMap();
 		
@@ -102,11 +115,11 @@
 					School.Markers[i] = new google.maps.Marker({
 						position: School.LatLngs[i],
 						map: Map.Map,
-						icon:'/img/orange.png',
+						icon:'img/orange.png',
 						shadow:'img/msmarker.shadow.png'
 					});
 					// Info boxes
-					School.InfoBoxText[i] = '<div class="infoBox" style="border:2px solid rgb(0,0,0); margin-top:8px; background:rgb(255,140,0); padding:5px; font-size:80%;">'+
+					School.InfoBoxText[i] = '<div class="infoBox" style="border:2px solid rgb(0,0,0); margin-top:8px; background:rgb(25,25,112); padding:5px; color:white; font-size:80%;">'+
 					ftdata.rows[i][2]+'<br />'+
 					ftdata.rows[i][3]+'<br />'+
 					ftdata.rows[i][5]+'<br /></div>';
@@ -165,8 +178,80 @@
 		}
 		
 		// Center the map on the user's location in the location input
-		function centeronmylocation() {
+		function mylocationcenter() {
 			console.log('centeronmylocation');
+		}
+		
+		/**
+		 * No GPS?
+		 */
+		function handleNoGeolocation(errorFlag)
+		{
+			if (errorFlag)
+			{
+				alert('We\'re sorry. Your browser\'s geolocation service failed.');
+			}
+			else
+			{
+				alert('We\'re sorry! Your browser does not support geolocation.');
+			}
+		}
+		
+		// Get address from GPS
+		function mylocationgps() {
+			function alertError() {
+				alert('We\'re sorry. We could not find an address for this location.');
+			}
+			if(gps)
+			{
+				// grab the lat/lng
+				navigator.geolocation.getCurrentPosition(
+					function(position)
+					{
+						MyLocation.lat = position.coords.latitude;
+						MyLocation.lng = position.coords.longitude;
+						MyLocation.LatLng = new google.maps.LatLng(
+							position.coords.latitude,
+							position.coords.longitude
+						);
+						// Find the address
+						var geocoder = new google.maps.Geocoder();
+						geocoder.geocode(
+							{'latLng':MyLocation.LatLng},
+							function(results,status)
+							{
+								if (status == google.maps.GeocoderStatus.OK)
+								{
+									if (results[1])
+									{
+										var formattedAddress = results[0].formatted_address.split(',');
+										MyLocation.addressFromGoogle = formattedAddress[0];
+										$('#mylocation').val(formattedAddress[0]);
+									}
+									else
+									{
+										alertError();
+									}
+								}
+								else
+								{
+									alertError();
+								}
+							}
+						);
+					},
+					function()
+					{
+						// Can't find the address
+						handleNoGeolocation(true);
+					}
+				);
+			}
+			else
+			{
+				// Browser doesn't support Geolocation
+				handleNoGeolocation(false);
+			}
 		}
 		
 		// Put a Pan/Zoom control on the map
@@ -255,14 +340,53 @@
 			centeronschool();
 		});
 		
-		// location input onblur
-		$('#location').blur(function(){
-			centeronmylocation();
+		// find me button click
+		$('#mylocation-gps').click(function(){
+			mylocationgps();
 		});
 		
-		// find school button click
-		$('#location-next').click(function(){
-			centeronmylocation();
+		// mylocation input change
+		$('#mylocation').change(function(){
+			/**
+			 * show an addressing error
+			 */
+			function addressError()
+			{
+				alert('We\'re sorry. We could not locate this address. Please doublecheck you\'ve entered your address correctly.');
+			}
+			if($.jStorage.storageAvailable())
+			{
+				$.jStorage.set('mylocation', $('#mylocation').val());
+			}
+			if($('#mylocation').val() != MyLocation.addressFromGoogle)
+			{
+				var geocoder = new google.maps.Geocoder();
+				geocoder.geocode(
+					{address:$('#mylocation').val()+', ' + Default.city + ', ' + Default.state},
+					function(results, status)
+					{
+						if (status == google.maps.GeocoderStatus.OK)
+						{
+							if (results[0])
+							{
+								MyLocation.LatLng = results[0].geometry.location;
+								MyLocation.lat = MyLocation.LatLng.lat();
+								MyLocation.lng = MyLocation.LatLng.lng();
+								MyLocation.addressFromGoogle = $('#mylocation').val();
+								console.log(MyLocation);
+							}
+							else
+							{
+								addressError();
+							}
+						}
+						else
+						{
+							addressError();
+						}
+					}
+				);
+			}
 		});
 	});
 	
