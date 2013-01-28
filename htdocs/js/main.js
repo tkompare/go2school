@@ -16,7 +16,7 @@
 		lat:null,
 		lng:null,
 		LatLng:null,
-		addressFromGoogle:null
+		address:null
 	};
 	var School = {
 		data:[],
@@ -55,6 +55,7 @@
 		if($.jStorage.storageAvailable())
 		{
 			$('#school').val($.jStorage.get('school',''));
+			$('#mylocation').val($.jStorage.get('mylocation',''));
 		}
 		
 		// Set up the loading message
@@ -225,8 +226,12 @@
 									if (results[1])
 									{
 										var formattedAddress = results[0].formatted_address.split(',');
-										MyLocation.addressFromGoogle = formattedAddress[0];
+										MyLocation.address = formattedAddress[0];
 										$('#mylocation').val(formattedAddress[0]);
+										if($.jStorage.storageAvailable())
+										{
+											$.jStorage.set('mylocation', formattedAddress[0]);
+										}
 									}
 									else
 									{
@@ -358,7 +363,7 @@
 			{
 				$.jStorage.set('mylocation', $('#mylocation').val());
 			}
-			if($('#mylocation').val() != MyLocation.addressFromGoogle)
+			if($('#mylocation').val() != MyLocation.address)
 			{
 				var geocoder = new google.maps.Geocoder();
 				geocoder.geocode(
@@ -372,7 +377,7 @@
 								MyLocation.LatLng = results[0].geometry.location;
 								MyLocation.lat = MyLocation.LatLng.lat();
 								MyLocation.lng = MyLocation.LatLng.lng();
-								MyLocation.addressFromGoogle = $('#mylocation').val();
+								MyLocation.address = $('#mylocation').val();
 								console.log(MyLocation);
 							}
 							else
