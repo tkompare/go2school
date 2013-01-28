@@ -1,7 +1,6 @@
 // The main.js enclosure
 (function(){
 	// Setup variables
-	//var touch = Modernizr.touch;
 	var gps = navigator.geolocation;
 	var Default = {
 		lat:41.85,
@@ -31,15 +30,15 @@
 		* @param theInfoWindow
 		* @returns {Function}
 		*/
-		toggleInfoBox:function(theMap,theMarker,theInfoBox) {
+		toggleInfoBox:function(Map,Marker,InfoBox) {
 			return function(){
-				if(theInfoBox.visible)
+				if(InfoBox.visible)
 				{
-					theInfoBox.close(theMap,theMarker);
+					InfoBox.close(Map,Marker);
 				}
 				else
 				{
-					theInfoBox.open(theMap,theMarker);
+					InfoBox.open(Map,Marker);
 				}
 			};
 		}

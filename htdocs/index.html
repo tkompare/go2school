@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang=en>
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1 minimum-scale=1">
-<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width, initial-scale=1, maximum-scale=1 minimum-scale=1">
+<meta http-equiv=X-UA-Compatible content="IE=edge" />
 <!--[if lt IE 9]>
 <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
 <![endif]-->
-<link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
-<link href="css/bootstrap-responsive.min.css" rel="stylesheet">
-<style type="text/css">
+<link href="css/bootstrap.min.css" rel=stylesheet media=screen>
+<link href="css/bootstrap-responsive.min.css" rel=stylesheet>
+<style type=text/css>
 	body {padding-top:0px;padding-bottom:0px;padding-left:0px;padding-right:0px}
 	#map img{max-width:none}
 	.padded{padding-left:10px;padding-right:10px}
@@ -17,57 +17,57 @@
 </style>
 </head>
 <body>
-	<div class="row-fluid">
-		<div id="before-map" class="span12">
-			<h2 class="center">Go To School!</h2>
-			<div id="grp-school" class="control-group center padded" style="margin-bottom:2em; margin-top:2em">
-				<label class="control-label" for="school"><h4>What's the name of your school?</h4>
+	<div class=row-fluid>
+		<div id=before-map class=span12>
+			<h2 class=center>Go To School!</h2>
+			<div id=grp-school class="control-group center padded" style="margin-bottom:2em; margin-top:2em">
+				<label class=control-label for=school><h4>What's the name of your school?</h4>
 				</label>
-				<div class="controls">
-					<input id="school" class="span10" type="text" placeholder="Name of school" />
+				<div class=controls>
+					<input id=school class=span10 type=text placeholder="Name of school" />
 				</div>
-				<div id="next" class="center" style="margin-bottom:2em; margin-top:2em">
-					<button id="school-next" class="btn btn-large btn-primary">Next</button>
+				<div class=center style="margin-bottom:2em; margin-top:2em">
+					<button id=school-next class="btn btn-large btn-primary">Next</button>
 				</div>
-				<span id="loading" class="label">Loading Data...</span>
+				<span id=loading class=label>Loading Data...</span>
 			</div>
-			<div id="grp-mylocation" class="control-group center padded" style="margin-bottom:2em; margin-top:2em">
-				<label class="control-label" for="mylocation"><h4>Where are you?&nbsp;&nbsp;<button id="mylocation-gps" class="btn btn-link btn-small" type="button">Find Me</button></h4></label>
-				<div class="controls">
-					<input id="mylocation" class="span10" type="text" placeholder="Enter an address" />
+			<div id=grp-mylocation class="control-group center padded" style="margin-bottom:2em; margin-top:2em">
+				<label class=control-label for=mylocation><h4>Where are you?&nbsp;&nbsp;<button id=mylocation-gps class="btn btn-link btn-small" type=button>Find Me</button></h4></label>
+				<div class=controls>
+					<input id=mylocation class=span10 type=text placeholder="Enter an address" />
 				</div>
-				<div id="next" class="center" style="margin-bottom:2em; margin-top:2em">
-					<button id="mylocation-next" class="btn btn-large btn-primary">Next</button>
+				<div class=center style="margin-bottom:2em; margin-top:2em">
+					<button id=mylocation-next class="btn btn-large btn-primary">Next</button>
 				</div>
 			</div>
-			<div id="travel" style="margin-bottom:5em; margin-top:2em">
-				<h4 class="center">How are you getting there?</h4>
-				<div id="travel" class="padded" data-toggle="buttons-radio">
-					<span class="span4"><button class="btn btn-large btn-primary btn-block">Walking</button></span>
-					<span class="span4"><button class="btn btn-large btn-primary btn-block">CTA/Metra</button></span>
-					<span class="span4"><button class="btn btn-large btn-primary btn-block">Driving</button></span>
+			<div id=travel style="margin-bottom:5em; margin-top:2em">
+				<h4 class=center>How are you getting there?</h4>
+				<div class=padded data-toggle=buttons-radio>
+					<span class=span4><button class="btn btn-large btn-primary btn-block">Walking</button></span>
+					<span class=span4><button class="btn btn-large btn-primary btn-block">CTA/Metra</button></span>
+					<span class=span4><button class="btn btn-large btn-primary btn-block">Driving</button></span>
 				</div>
 			</div>
 		</div>
 	</div>
-	<div id="div-map" class="row-fluid">
-		<div id="the-map" class="span12">
-			<div id="map-width" style="display:inline-block; position:relative; width:100%;">
-				<div id="map-ratio" style="margin-top:200px;">
-					<div id="map" style="position:absolute; top:0; bottom:0; left:0; right:0;">
+	<div id=div-map class=row-fluid>
+		<div id=the-map class=span12>
+			<div id=map-width style="display:inline-block; position:relative; width:100%;">
+				<div id=map-ratio style="margin-top:200px;">
+					<div id=map style="position:absolute; top:0; bottom:0; left:0; right:0;">
 					</div>
 				</div>
 			</div>
 		</div>
 	</div>
-	<div id="div-footer" class="row-fluid">
+	<div id=div-footer class=row-fluid>
 		<hr>
-		<footer class="padded">
-			<div class="span4">
+		<footer class=padded>
+			<div class=span4>
 				<p><a href="http://www.cps.edu">Chicago Public Schools</a></p>
 				<p><a href="tel:+17735531000">773.553.1000</a></p>
 			</div>
-			<div class="span8">
+			<div class=span8>
 				<p class="pull-right muted"><small>This map was not developed by
 					the Chicago Public Schools (CPS) and CPS makes no representations as to the 
 					accuracy of the information provided by this map application. 
@@ -83,10 +83,9 @@
 	<script>window.jQuery || document.write('<script src="js/jquery-1.9.0.min.js"><\/script>')</script>
 	<script src="//maps.googleapis.com/maps/api/js?key=AIzaSyDH5WuL3gKYVBWVqLr6g3PQffdZE-XhBUw&sensor=true" type="text/javascript"></script>
 	<script src="js/bootstrap.min.js"></script>
-	<!-- These six .js files rolled into 'main.min.js' -->
+	<!-- These five .js files rolled into 'main.min.js' -->
 		<script src="js/jquery.json-2.4.js"></script>
 		<script src="js/jstorage.js"></script>
-		<script src="js/touchtest.min.js"></script>
 		<script src="js/tkmap.4.0.0.js"></script>
 		<script src="js/infobox.js"></script>
 		<script src="js/main.js"></script>
