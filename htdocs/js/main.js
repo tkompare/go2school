@@ -3,9 +3,9 @@
 	// Setup variables
 	var gps = navigator.geolocation;
 	var Default = {
+		city:'Chicago',
 		lat:41.85,
 		lng:-87.675,
-		city:'Chicago',
 		state:'IL',
 		styles:'grey minlabels',
 		zoom:14
@@ -17,6 +17,16 @@
 		LatLng:null,
 		address:null
 	};
+	var Schedule = {
+		data:[]
+	};
+	var date = new Date();
+	var Today = {
+		month:date.getMonth()+1,
+		date:date.getDate(),
+		year:date.getFullYear(),
+	};
+	var schoolToday = 'No Schedule Available';
 	var School = {
 		data:[],
 		LatLngs:[],
@@ -84,21 +94,66 @@
 		PanZoomControlDiv.index = 1;
 		Map.Map.controls[google.maps.ControlPosition.TOP_RIGHT].push(PanZoomControlDiv);
 		
-		// The FT query
-		var ftquery = encodeURIComponent("SELECT lat, lng, shortname, address, postalcode, phone, start, end, afterstart, afterend FROM 1QQu0GHzbkKk5OdAl2VaaY2sm1Ggoc8Vo5GfiGLI");
+	// The School Location FT query
+		var scheduleftquery = encodeURIComponent("SELECT date, dayofweek, unifiedcalendar FROM 1u765vIMSPecSEinBe1H6JPYSFE5ljbAW1Mq3okc");
 		
-		// Construct the URL
-		var fturl = ['https://www.googleapis.com/fusiontables/v1/query'];
-		fturl.push('?sql=' + ftquery);
-		fturl.push('&key=AIzaSyDH5WuL3gKYVBWVqLr6g3PQffdZE-XhBUw');
-		fturl.push('&callback=?');
+		// Construct the School Location URL
+		var schedulefturl = ['https://www.googleapis.com/fusiontables/v1/query'];
+		schedulefturl.push('?sql=' + scheduleftquery);
+		schedulefturl.push('&key=AIzaSyDH5WuL3gKYVBWVqLr6g3PQffdZE-XhBUw');
+		schedulefturl.push('&callback=?');
 		
-		// Get the FT data!
 		$.ajax({
-			url: fturl.join(''),
+			url: schedulefturl.join(''),
 			dataType: 'jsonp',
 			success: function (ftdata) {
-				// Copy the data to the School object
+				for (var i in ftdata.rows)
+				{
+					Schedule.data[i] = [];
+					for(var j in ftdata.columns)
+					{
+						var colname = ftdata.columns[j];
+						Schedule.data[i][colname] = ftdata.rows[i][j];
+					}
+					var today = Today.month+'/'+Today.date+'/'+Today.year;
+					if(Schedule.data[i].date == today)
+					{
+						schoolToday = Schedule.data[i].unifiedcalendar;
+					}
+				}
+				if(schoolToday == 'Full Day')
+				{
+					$('#schedule').html('Yes - '+schoolToday);
+					$('#schedule').addClass('text-success');
+				}
+				else if(schoolToday = 'No Schedule Available')
+				{
+					$('#schedule').html('We don\'t know - '+schoolToday);
+					$('#schedule').addClass('text-warning');
+				}
+				else
+				{
+					$('#schedule').html('No - '+schoolToday);
+					$('#schedule').addClass('text-error');
+				}
+			}
+		});
+		
+		// The School Location FT query
+		var schoolftquery = encodeURIComponent("SELECT lat, lng, shortname, address, postalcode, phone, start, end, afterstart, afterend FROM 1QQu0GHzbkKk5OdAl2VaaY2sm1Ggoc8Vo5GfiGLI");
+		
+		// Construct the School Location URL
+		var schoolfturl = ['https://www.googleapis.com/fusiontables/v1/query'];
+		schoolfturl.push('?sql=' + schoolftquery);
+		schoolfturl.push('&key=AIzaSyDH5WuL3gKYVBWVqLr6g3PQffdZE-XhBUw');
+		schoolfturl.push('&callback=?');
+		
+		// Get the School Location FT data!
+		$.ajax({
+			url: schoolfturl.join(''),
+			dataType: 'jsonp',
+			success: function (ftdata) {
+				// Copy the School Location data to the School object
 				for (var i in ftdata.rows)
 				{
 					School.data[i] = [];
@@ -141,9 +196,8 @@
 						,pane: "floatPane"
 						,enableEventPropagation: false
 					};
-					// Make the info boxes
+					// Make the info box
 					School.InfoBox[i] = new InfoBox(options);
-					School.InfoBox[i].onmap = 0;
 				}
 				// Try to center on school in school input 
 				centeronschool();
