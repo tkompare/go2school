@@ -40,12 +40,28 @@
 					<button id=mylocation-next class="btn btn-large btn-primary">Next</button>
 				</div>
 			</div>
-			<div id=travel style="margin-bottom:5em; margin-top:2em">
+			<div id=grp-time style="margin-top:2em; margin-bottom:2em">
+				<h4 class=center>What time do you want to get there?</h4>
+				<div class=padded data-toggle=buttons-radio style="margin-top:2em; margin-bottom:2em">
+					<span class=span4><button id=time-walking name=travel value=start class="btn btn-large btn-primary btn-block">Start of school</button></span>
+					<span class=span4><button id=time-transit name=travel value=end class="btn btn-large btn-primary btn-block">End of school</button></span>
+					<span class=span4><button id=time-driving name=travel value=custom class="btn btn-large btn-primary btn-block">Choose my own time</button></span>
+				</div>
+				<p class=center style="margin-top:2em; margin-bottom:2em">For more information, visit <a href="http://transitchicago.com">transitchicago.org</a></p>
+				<div class=center style="margin-bottom:2em; margin-top:2em">
+					<button id=time-next class="btn btn-large btn-primary">Next</button>
+				</div>
+			</div>
+			<div id=grp-travel style="margin-top:2em; margin-bottom:2em">
 				<h4 class=center>How are you getting there?</h4>
-				<div class=padded data-toggle=buttons-radio>
-					<span class=span4><button class="btn btn-large btn-primary btn-block">Walking</button></span>
-					<span class=span4><button class="btn btn-large btn-primary btn-block">CTA/Metra</button></span>
-					<span class=span4><button class="btn btn-large btn-primary btn-block">Driving</button></span>
+				<div class=padded data-toggle=buttons-radio style="margin-top:2em; margin-bottom:2em">
+					<span class=span4><button id=travel-walking name=travel value=WALKING class="btn btn-large btn-primary btn-block">Walking</button></span>
+					<span class=span4><button id=travel-transit name=travel value=TRANSIT class="btn btn-large btn-primary btn-block">CTA/Metra</button></span>
+					<span class=span4><button id=travel-driving name=travel value=DRIVING class="btn btn-large btn-primary btn-block">Driving</button></span>
+				</div>
+				<p class=center style="margin-top:2em; margin-bottom:2em">For more information, visit <a href="http://transitchicago.com">transitchicago.org</a></p>
+				<div class=center style="margin-bottom:2em; margin-top:2em">
+					<button id=travel-next class="btn btn-large btn-primary">Next</button>
 				</div>
 			</div>
 		</div>

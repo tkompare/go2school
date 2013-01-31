@@ -55,7 +55,7 @@
 	};
 	
 	//hide some stuff by default
-	$('#travel,#grp-mylocation').hide();
+	$('#grp-mylocation,#grp-travel,#grp-time').hide();
 	
 	// The jQuery document.ready enclosure
 	$(function(){
@@ -446,6 +446,25 @@
 				);
 			}
 		});
+		
+		// mylocation "next" button click
+		$('#mylocation-next').click(function(){
+			$('#grp-mylocation').hide();
+			$('#grp-travel').show();
+		});
+		
+	// travel "next" button click
+		$('#time-next').click(function(){
+			$('#grp-time').hide();
+			//$('#grp-').show();
+		});
+		
+		// travel "next" button click
+		$('#travel-next').click(function(){
+			$('#grp-travel').hide();
+			$('#grp-time').show();
+		});
+		
 	});
 	
 })();
