@@ -65,6 +65,19 @@
 		{
 			$('#school').val($.jStorage.get('school',''));
 			$('#mylocation').val($.jStorage.get('mylocation',''));
+			var storageTravel = $.jStorage.get('travel','');
+			if(storageTravel === 'WALKING')
+			{
+				$('#travel-walking').addClass('active');
+			}
+			else if(storageTravel === 'TRANSIT')
+			{
+				$('#travel-transit').addClass('active');
+			}
+			else if(storageTravel === 'DRIVING')
+			{
+				$('#travel-driving').addClass('active');
+			}
 		}
 		
 		// Set up the loading message
@@ -94,7 +107,7 @@
 		PanZoomControlDiv.index = 1;
 		Map.Map.controls[google.maps.ControlPosition.TOP_RIGHT].push(PanZoomControlDiv);
 		
-	// The School Location FT query
+		// The School Location FT query
 		var scheduleftquery = encodeURIComponent("SELECT date, dayofweek, unifiedcalendar FROM 1u765vIMSPecSEinBe1H6JPYSFE5ljbAW1Mq3okc");
 		
 		// Construct the School Location URL
@@ -107,6 +120,9 @@
 			url: schedulefturl.join(''),
 			dataType: 'jsonp',
 			success: function (ftdata) {
+				
+				var today = Today.month+'/'+Today.date+'/'+Today.year;
+				
 				for (var i in ftdata.rows)
 				{
 					Schedule.data[i] = [];
@@ -115,18 +131,18 @@
 						var colname = ftdata.columns[j];
 						Schedule.data[i][colname] = ftdata.rows[i][j];
 					}
-					var today = Today.month+'/'+Today.date+'/'+Today.year;
+					
 					if(Schedule.data[i].date == today)
 					{
 						schoolToday = Schedule.data[i].unifiedcalendar;
 					}
 				}
-				if(schoolToday == 'Full Day')
+				if(schoolToday === 'Full Day')
 				{
 					$('#schedule').html('Yes - '+schoolToday);
 					$('#schedule').addClass('text-success');
 				}
-				else if(schoolToday = 'No Schedule Available')
+				else if(schoolToday === 'No Schedule Available')
 				{
 					$('#schedule').html('We don\'t know - '+schoolToday);
 					$('#schedule').addClass('text-warning');
@@ -325,7 +341,7 @@
 			controlUI.style.borderWidth = '2px';
 			controlUI.style.cursor = 'pointer';
 			controlUI.style.textAlign = 'center';
-			controlUI.title = 'Click to set the map to Home';
+			controlUI.title = 'Click to interact with the map.';
 			controlDiv.appendChild(controlUI);
 			// Set CSS for the control interior.
 			var controlText = document.createElement('div');
@@ -348,6 +364,7 @@
 						$('#map-width').css('height','100%');
 						$('#map-ratio').css('margin-top', window.innerHeight);
 						$('#div-map').offset().top;
+						controlUI.title = 'Click to close up the map.';
 						controlText.innerHTML = 'Minimize';
 						Map.Map.setCenter(cntr);
 						google.maps.event.trigger(Map.Map, 'resize');
@@ -365,6 +382,7 @@
 					$('#before-map,#div-footer').show(750,function(){
 						$('#map-width').css('height','');
 						$('#map-ratio').css('margin-top','200px');
+						controlUI.title = 'Click to interact with the map.';
 						controlText.innerHTML = 'Explore Map';
 						Map.Map.setCenter(cntr);
 						google.maps.event.trigger(Map.Map, 'resize');
@@ -431,7 +449,6 @@
 								MyLocation.lat = MyLocation.LatLng.lat();
 								MyLocation.lng = MyLocation.LatLng.lng();
 								MyLocation.address = $('#mylocation').val();
-								console.log(MyLocation);
 							}
 							else
 							{
@@ -453,16 +470,18 @@
 			$('#grp-travel').show();
 		});
 		
-	// travel "next" button click
+		// travel "next" button click
 		$('#time-next').click(function(){
 			$('#grp-time').hide();
 			//$('#grp-').show();
 		});
 		
-		// travel "next" button click
-		$('#travel-next').click(function(){
-			$('#grp-travel').hide();
-			$('#grp-time').show();
+		// travel change
+		$('.travel').on('click', function() {
+			if($.jStorage.storageAvailable())
+			{
+				$.jStorage.set('travel', $(this).val());
+			}
 		});
 		
 	});
