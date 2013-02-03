@@ -57,7 +57,7 @@ function TkMap(Args)
 	 */
 	/** The Google Map object */
 	this.Map = null;
-	/* 
+	/*
 	 * METHODS ****************************************************************
 	 */
 	/*
@@ -67,7 +67,7 @@ function TkMap(Args)
 	var touchStart =  function(e)
 	{
 		dragFlag = true;
-		touchstart = e.touches[0].pageY; 
+		touchstart = e.touches[0].pageY;
 	};
 	/** End calculation of vertical scroll on touchend event */
 	var touchEnd = function()
@@ -77,7 +77,7 @@ function TkMap(Args)
 	/** Calculate vertical scroll on touchmove event */
 	var touchMove = function(e)
 	{
-		if ( ! dragFlag) return;
+		if ( ! dragFlag){return;}
 		touchend = e.touches[0].pageY;
 		window.scrollBy(0,(touchstart - touchend ));
 	};
@@ -85,7 +85,7 @@ function TkMap(Args)
 	var setCustomStyles = function()
 	{
 		var StylesArray = Styles.split(' ');
-		for (i in StylesArray)
+		for (var i in StylesArray)
 		{
 			if(StylesArray[i] === 'satellite')
 			{
@@ -107,7 +107,7 @@ function TkMap(Args)
 				}
 				else if (StylesArray[i] === 'minlabels')
 				{
-					MapOptions.styles.push 
+					MapOptions.styles.push
 					(
 						{
 							featureType : "all",
@@ -129,7 +129,7 @@ function TkMap(Args)
 				else if (StylesArray[i] === 'grey')
 				{
 					MapOptions.backgroundColor = '#C5C5C5';
-					MapOptions.styles.push 
+					MapOptions.styles.push
 					(
 						{
 							stylers: [{ saturation: -87 }]
@@ -250,4 +250,4 @@ function TkMap(Args)
 	{
 		this.initMap();
 	}
-};
+}

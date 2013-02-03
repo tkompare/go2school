@@ -1,46 +1,84 @@
 // The main.js enclosure
 (function(){
 	// Setup variables
-	var gps = navigator.geolocation;
-	var Default = {
+	
+	/**
+	 * Default settings for this application
+	 * @type object
+	 */
+	var Application = {
 		city:'Chicago',
 		lat:41.85,
 		lng:-87.675,
 		state:'IL',
 		styles:'grey minlabels',
-		zoom:14
+		zoom:14,
+		schooltoday:'No Schedule Available',
+		googlemapsapikey:'AIzaSyDH5WuL3gKYVBWVqLr6g3PQffdZE-XhBUw',
+		schoolschedulequery:'SELECT date, dayofweek, unifiedcalendar FROM 1u765vIMSPecSEinBe1H6JPYSFE5ljbAW1Mq3okc',
+		schoollocationquery:'SELECT lat, lng, shortname, address, postalcode, phone, start, end, afterstart, afterend FROM 1QQu0GHzbkKk5OdAl2VaaY2sm1Ggoc8Vo5GfiGLI'
 	};
-	var locnames = [];
+	
+	/**
+	 * Is the user's device gps capable?
+	 * @type boolean
+	 */
+	var gps = navigator.geolocation;
+	
+	/**
+	 * Hold the user's location information
+	 * @type object
+	 */
 	var MyLocation = {
 		lat:null,
 		lng:null,
-		LatLng:null,
+		latlng:null,
 		address:null
 	};
-	var Schedule = {
-		data:[]
-	};
+	
+	/**
+	 * Holds the array of schedule (date) information
+	 * @type array
+	 */
+	var Schedules = [];
+	
+	/**
+	 * Schedule information for each day
+	 * @type object
+	 */
+	function Schedule() {
+		this.data = [];
+	}
+	
+	/**
+	 * Today's date
+	 * @type object
+	 */
 	var date = new Date();
+	
+	/**
+	 * Today's formatted date
+	 * @type object
+	 */
 	var Today = {
 		month:date.getMonth()+1,
 		date:date.getDate(),
-		year:date.getFullYear(),
+		year:date.getFullYear()
 	};
-	var schoolToday = 'No Schedule Available';
-	var School = {
-		data:[],
-		LatLngs:[],
-		Markers:[],
-		InfoBox:[],
-		InfoBoxText:[],
-		/**
-		* Factory method to open & close info boxes
-		* @param theMap
-		* @param theMarker
-		* @param theInfoWindow
-		* @returns {Function}
-		*/
-		toggleInfoBox:function(Map,Marker,InfoBox) {
+	
+	var schoolnames = [];
+	
+	var Schools = [];
+	
+	function School()
+	{
+		this.data = {};
+		this.latlng = null;
+		this.marker = null;
+		this.infobox = null;
+		this.infoboxtext = null;
+		
+		this.toggleInfoBox = function(Map,Marker,InfoBox) {
 			return function(){
 				if(InfoBox.visible)
 				{
@@ -51,10 +89,16 @@
 					InfoBox.open(Map,Marker);
 				}
 			};
-		}
-	};
+		};
+	}
 	
-	//hide some stuff by default
+	function FusionTable()
+	{
+		this.query = null;
+		this.url = [];
+	}
+
+	//hide some stuff by Application
 	$('#grp-mylocation,#grp-travel,#grp-time').hide();
 	
 	// The jQuery document.ready enclosure
@@ -92,10 +136,10 @@
 		// The Google map base layer object
 		var Map = new TkMap({
 			domid:'map',
-			lat:Default.lat,
-			lng:Default.lng,
-			styles:Default.styles,
-			zoom:Default.zoom
+			lat:Application.lat,
+			lng:Application.lng,
+			styles:Application.styles,
+			zoom:Application.zoom
 		});
 		Map.initMap();
 		
@@ -107,17 +151,18 @@
 		PanZoomControlDiv.index = 1;
 		Map.Map.controls[google.maps.ControlPosition.TOP_RIGHT].push(PanZoomControlDiv);
 		
-		// The School Location FT query
-		var scheduleftquery = encodeURIComponent("SELECT date, dayofweek, unifiedcalendar FROM 1u765vIMSPecSEinBe1H6JPYSFE5ljbAW1Mq3okc");
+		// The School Schedule FT query
+		var ScheduleFT = new FusionTable();
+		ScheduleFT.query = encodeURIComponent(Application.schoolschedulequery);
 		
 		// Construct the School Location URL
-		var schedulefturl = ['https://www.googleapis.com/fusiontables/v1/query'];
-		schedulefturl.push('?sql=' + scheduleftquery);
-		schedulefturl.push('&key=AIzaSyDH5WuL3gKYVBWVqLr6g3PQffdZE-XhBUw');
-		schedulefturl.push('&callback=?');
+		ScheduleFT.url = ['https://www.googleapis.com/fusiontables/v1/query'];
+		ScheduleFT.url.push('?sql='+ScheduleFT.query);
+		ScheduleFT.url.push('&key='+Application.googlemapsapikey);
+		ScheduleFT.url.push('&callback=?');
 		
 		$.ajax({
-			url: schedulefturl.join(''),
+			url: ScheduleFT.url.join(''),
 			dataType: 'jsonp',
 			success: function (ftdata) {
 				
@@ -125,101 +170,104 @@
 				
 				for (var i in ftdata.rows)
 				{
-					Schedule.data[i] = [];
+					Schedules[i] = new Schedule();
 					for(var j in ftdata.columns)
 					{
 						var colname = ftdata.columns[j];
-						Schedule.data[i][colname] = ftdata.rows[i][j];
+						Schedules[i].data[colname] = ftdata.rows[i][j];
 					}
 					
-					if(Schedule.data[i].date == today)
+					if(Schedules[i].data.date === today)
 					{
-						schoolToday = Schedule.data[i].unifiedcalendar;
+						Application.schooltoday = Schedules[i].data.unifiedcalendar;
+						break;
 					}
 				}
-				if(schoolToday === 'Full Day')
+				if(Application.schooltoday === 'Full Day')
 				{
-					$('#schedule').html('Yes - '+schoolToday);
+					$('#schedule').html('Yes - '+Application.schooltoday);
 					$('#schedule').addClass('text-success');
 				}
-				else if(schoolToday === 'No Schedule Available')
+				else if(Application.schooltoday === 'No Schedule Available')
 				{
-					$('#schedule').html('We don\'t know - '+schoolToday);
+					$('#schedule').html('We don\'t know - '+Application.schooltoday);
 					$('#schedule').addClass('text-warning');
 				}
 				else
 				{
-					$('#schedule').html('No - '+schoolToday);
+					$('#schedule').html('No - '+Application.schooltoday);
 					$('#schedule').addClass('text-error');
 				}
 			}
 		});
 		
 		// The School Location FT query
-		var schoolftquery = encodeURIComponent("SELECT lat, lng, shortname, address, postalcode, phone, start, end, afterstart, afterend FROM 1QQu0GHzbkKk5OdAl2VaaY2sm1Ggoc8Vo5GfiGLI");
+		var SchoolFT = new FusionTable();
+		SchoolFT.query = encodeURIComponent(Application.schoollocationquery);
 		
 		// Construct the School Location URL
-		var schoolfturl = ['https://www.googleapis.com/fusiontables/v1/query'];
-		schoolfturl.push('?sql=' + schoolftquery);
-		schoolfturl.push('&key=AIzaSyDH5WuL3gKYVBWVqLr6g3PQffdZE-XhBUw');
-		schoolfturl.push('&callback=?');
+		SchoolFT.url = ['https://www.googleapis.com/fusiontables/v1/query'];
+		SchoolFT.url.push('?sql=' + SchoolFT.query);
+		SchoolFT.url.push('&key='+Application.googlemapsapikey);
+		SchoolFT.url.push('&callback=?');
 		
 		// Get the School Location FT data!
 		$.ajax({
-			url: schoolfturl.join(''),
+			url: SchoolFT.url.join(''),
 			dataType: 'jsonp',
 			success: function (ftdata) {
 				// Copy the School Location data to the School object
 				for (var i in ftdata.rows)
 				{
-					School.data[i] = [];
+					Schools[i] = new School();
 					for(var j in ftdata.columns)
 					{
 						var colname = ftdata.columns[j];
-						School.data[i][colname] = ftdata.rows[i][j];
+						Schools[i].data[colname] = ftdata.rows[i][j];
 					}
-					// Push to the location names array the name of the school
-					locnames.push(ftdata.rows[i][2]);
+					// Push to the location names array the name of the schools
+					// for the form input typeahead function
+					schoolnames.push(Schools[i].data.shortname);
 					// Create the Google LatLng object
-					School.LatLngs[i] = new google.maps.LatLng(ftdata.rows[i][0],ftdata.rows[i][1]);
-					// Create the Markers for each school
-					School.Markers[i] = new google.maps.Marker({
-						position: School.LatLngs[i],
+					Schools[i].latlng = new google.maps.LatLng(ftdata.rows[i][0],ftdata.rows[i][1]);
+					// Create the markers for each school
+					Schools[i].marker = new google.maps.Marker({
+						position: Schools[i].latlng,
 						map: Map.Map,
 						icon:'img/orange.png',
 						shadow:'img/msmarker.shadow.png'
 					});
 					// Info boxes
-					School.InfoBoxText[i] = '<div class="infoBox" style="border:2px solid rgb(0,0,0); margin-top:8px; background:rgb(25,25,112); padding:5px; color:white; font-size:80%;">'+
-					ftdata.rows[i][2]+'<br />'+
-					ftdata.rows[i][3]+'<br />'+
-					ftdata.rows[i][5]+'<br /></div>';
+					Schools[i].infoboxtext = '<div class="infoBox" style="border:2px solid rgb(0,0,0); margin-top:8px; background:rgb(25,25,112); padding:5px; color:white; font-size:80%;">'+
+					Schools[i].data.shortname+'<br />'+
+					Schools[i].data.address+'<br />'+
+					Schools[i].data.phone+'<br /></div>';
 					var options = {
-						content: School.InfoBoxText[i]
-						,disableAutoPan: false
-						,maxWidth: 0
-						,pixelOffset: new google.maps.Size(-140, 0)
-						,zIndex: null
-						,boxStyle: {
-							background: "url('img/tipbox.gif') no-repeat"
-							,opacity: 0.9
-							,width: "160px"
-						}
-						,closeBoxMargin: "11px 4px 4px 4px"
-						,closeBoxURL: "img/close.gif"
-						,infoBoxClearance: new google.maps.Size(1, 1)
-						,visible: false
-						,pane: "floatPane"
-						,enableEventPropagation: false
+						content: Schools[i].infoboxtext,
+						disableAutoPan: false,
+						maxWidth: 0,
+						pixelOffset: new google.maps.Size(-140, 0),
+						zIndex: null,
+						boxStyle: {
+							background: "url('img/tipbox.gif') no-repeat",
+							opacity: 0.9,
+							width: "160px"
+						},
+						closeBoxMargin: "11px 4px 4px 4px",
+						closeBoxURL: "img/close.gif",
+						infoBoxClearance: new google.maps.Size(1, 1),
+						visible: false,
+						pane: "floatPane",
+						enableEventPropagation: false
 					};
 					// Make the info box
-					School.InfoBox[i] = new InfoBox(options);
+					Schools[i].infobox = new InfoBox(options);
 				}
-				// Try to center on school in school input 
+				// Try to center on school in school input
 				centeronschool();
 				// Set up the typeahead for the school names.
 				$('#school').typeahead({
-					source:locnames,
+					source:schoolnames,
 					items:3,
 					minLength:1
 				});
@@ -230,26 +278,21 @@
 		
 		// Center the map on the school in the school name input
 		function centeronschool() {
-			if($('#school').val() != '')
+			if($('#school').val() !== '')
 			{
-				for(var i in School.data)
+				for(var i in Schools)
 				{
-					if(School.data[i].shortname == $('#school').val())
+					if(Schools[i].data.shortname === $('#school').val())
 					{
-						Map.Map.setCenter(School.LatLngs[i]);
-						School.InfoBox[i].open(Map.Map,School.Markers[i]);
+						Map.Map.setCenter(Schools[i].latlng);
+						Schools[i].infobox.open(Map.Map,Schools[i].marker);
 					}
 					else
 					{
-						School.InfoBox[i].close(Map.Map,School.Markers[i]);
+						Schools[i].infobox.close(Map.Map,Schools[i].marker);
 					}
 				}
 			}
-		}
-		
-		// Center the map on the user's location in the location input
-		function mylocationcenter() {
-			console.log('centeronmylocation');
 		}
 		
 		/**
@@ -280,17 +323,17 @@
 					{
 						MyLocation.lat = position.coords.latitude;
 						MyLocation.lng = position.coords.longitude;
-						MyLocation.LatLng = new google.maps.LatLng(
+						MyLocation.latlng = new google.maps.LatLng(
 							position.coords.latitude,
 							position.coords.longitude
 						);
 						// Find the address
 						var geocoder = new google.maps.Geocoder();
 						geocoder.geocode(
-							{'latLng':MyLocation.LatLng},
+							{'latLng':MyLocation.latlng},
 							function(results,status)
 							{
-								if (status == google.maps.GeocoderStatus.OK)
+								if (status === google.maps.GeocoderStatus.OK)
 								{
 									if (results[1])
 									{
@@ -355,7 +398,7 @@
 			controlUI.appendChild(controlText);
 			// Setup the click event listeners.
 			google.maps.event.addDomListener(controlUI, 'click', function() {
-				if(Map.Map.zoomControl == false)
+				if(Map.Map.zoomControl === false)
 				{
 					Map.setPanZoom(true);
 					Map.setTouchScroll(false);
@@ -369,9 +412,9 @@
 						Map.Map.setCenter(cntr);
 						google.maps.event.trigger(Map.Map, 'resize');
 					});
-					for(var i in School.Markers)
+					for(var i in Schools)
 					{
-						google.maps.event.addListener(School.Markers[i], 'click', School.toggleInfoBox(Map.Map,School.Markers[i],School.InfoBox[i]));
+						google.maps.event.addListener(Schools[i].marker, 'click', Schools[i].toggleInfoBox(Map.Map,Schools[i].marker,Schools[i].infobox));
 					}
 				}
 				else
@@ -387,9 +430,9 @@
 						Map.Map.setCenter(cntr);
 						google.maps.event.trigger(Map.Map, 'resize');
 					});
-					for(var i in School.Markers)
+					for(var i in Schools)
 					{
-						google.maps.event.clearListeners(School.Markers[i], 'click');
+						google.maps.event.clearListeners(Schools[i].marker, 'click');
 					}
 				}
 			});
@@ -434,20 +477,20 @@
 			{
 				$.jStorage.set('mylocation', $('#mylocation').val());
 			}
-			if($('#mylocation').val() != MyLocation.address)
+			if($('#mylocation').val() !== MyLocation.address)
 			{
 				var geocoder = new google.maps.Geocoder();
 				geocoder.geocode(
-					{address:$('#mylocation').val()+', ' + Default.city + ', ' + Default.state},
+					{address:$('#mylocation').val()+', ' + Application.city + ', ' + Application.state},
 					function(results, status)
 					{
-						if (status == google.maps.GeocoderStatus.OK)
+						if (status === google.maps.GeocoderStatus.OK)
 						{
 							if (results[0])
 							{
 								MyLocation.LatLng = results[0].geometry.location;
-								MyLocation.lat = MyLocation.LatLng.lat();
-								MyLocation.lng = MyLocation.LatLng.lng();
+								MyLocation.lat = MyLocation.latlng.lat();
+								MyLocation.lng = MyLocation.latlng.lng();
 								MyLocation.address = $('#mylocation').val();
 							}
 							else
