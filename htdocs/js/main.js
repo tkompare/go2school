@@ -16,7 +16,11 @@
 		schooltoday:'No Schedule Available',
 		googlemapsapikey:'AIzaSyDH5WuL3gKYVBWVqLr6g3PQffdZE-XhBUw',
 		schoolschedulequery:'SELECT date, dayofweek, unifiedcalendar FROM 1u765vIMSPecSEinBe1H6JPYSFE5ljbAW1Mq3okc',
-		schoollocationquery:'SELECT lat, lng, shortname, address, postalcode, phone, start, end, afterstart, afterend FROM 1QQu0GHzbkKk5OdAl2VaaY2sm1Ggoc8Vo5GfiGLI'
+		schoollocationquery:'SELECT lat, lng, shortname, address, postalcode, phone, start, end, afterstart, afterend FROM 1QQu0GHzbkKk5OdAl2VaaY2sm1Ggoc8Vo5GfiGLI',
+		scheduledatacolumns:null,
+		scheduledatarows:null,
+		schooldatacolumns:null,
+		schooldatarows:null
 	};
 	
 	/**
@@ -78,7 +82,8 @@
 		this.infobox = null;
 		this.infoboxtext = null;
 		
-		this.toggleInfoBox = function(Map,Marker,InfoBox) {
+		this.toggleInfoBox = function(Map,Marker,InfoBox)
+		{
 			return function(){
 				if(InfoBox.visible)
 				{
@@ -122,6 +127,10 @@
 			{
 				$('#travel-driving').addClass('active');
 			}
+			Application.scheduledatacolumns = $.jStorage.get('scheduledatacolumns',null);
+			Application.scheduledatarows = $.jStorage.get('scheduledatarows',null);
+			Application.schooldatacolumns = $.jStorage.get('schooldatacolumns',null);
+			Application.schooldatarows = $.jStorage.get('schooldatarows',null);
 		}
 		
 		// Set up the loading message
@@ -151,130 +160,167 @@
 		PanZoomControlDiv.index = 1;
 		Map.Map.controls[google.maps.ControlPosition.TOP_RIGHT].push(PanZoomControlDiv);
 		
-		// The School Schedule FT query
-		var ScheduleFT = new FusionTable();
-		ScheduleFT.query = encodeURIComponent(Application.schoolschedulequery);
-		
-		// Construct the School Location URL
-		ScheduleFT.url = ['https://www.googleapis.com/fusiontables/v1/query'];
-		ScheduleFT.url.push('?sql='+ScheduleFT.query);
-		ScheduleFT.url.push('&key='+Application.googlemapsapikey);
-		ScheduleFT.url.push('&callback=?');
-		
-		$.ajax({
-			url: ScheduleFT.url.join(''),
-			dataType: 'jsonp',
-			success: function (ftdata) {
-				
-				var today = Today.month+'/'+Today.date+'/'+Today.year;
-				
-				for (var i in ftdata.rows)
-				{
-					Schedules[i] = new Schedule();
-					for(var j in ftdata.columns)
+		if(Application.scheduledatacolumns === null || Application.scheduledatarows === null)
+		{
+			// The School Schedule FT query
+			var ScheduleFT = new FusionTable();
+			ScheduleFT.query = encodeURIComponent(Application.schoolschedulequery);
+			
+			// Construct the School Location URL
+			ScheduleFT.url = ['https://www.googleapis.com/fusiontables/v1/query'];
+			ScheduleFT.url.push('?sql='+ScheduleFT.query);
+			ScheduleFT.url.push('&key='+Application.googlemapsapikey);
+			ScheduleFT.url.push('&callback=?');
+			
+			$.ajax({
+				url: ScheduleFT.url.join(''),
+				dataType: 'jsonp',
+				success: function (ftdata) {
+					if($.jStorage.storageAvailable())
 					{
-						var colname = ftdata.columns[j];
-						Schedules[i].data[colname] = ftdata.rows[i][j];
+						$.jStorage.set('scheduledatacolumns',ftdata.columns);
+						$.jStorage.set('scheduledatarows',ftdata.rows);
 					}
+					getSchedule(ftdata.columns,ftdata.rows);
+				}
+			});
+		}
+		else
+		{
+			getSchedule(Application.scheduledatacolumns,Application.scheduledatarows);
+		}
+		
+		if(Application.schooldatacolumns === null || Application.schooldatarows === null)
+		{
+			// The School Location FT query
+			var SchoolFT = new FusionTable();
+			SchoolFT.query = encodeURIComponent(Application.schoollocationquery);
+			
+			// Construct the School Location URL
+			SchoolFT.url = ['https://www.googleapis.com/fusiontables/v1/query'];
+			SchoolFT.url.push('?sql=' + SchoolFT.query);
+			SchoolFT.url.push('&key='+Application.googlemapsapikey);
+			SchoolFT.url.push('&callback=?');
+			
+			// Get the School Location FT data!
+			$.ajax({
+				url: SchoolFT.url.join(''),
+				dataType: 'jsonp',
+				success: function (ftdata) {
 					
-					if(Schedules[i].data.date === today)
+					if($.jStorage.storageAvailable())
 					{
-						Application.schooltoday = Schedules[i].data.unifiedcalendar;
-						break;
+						$.jStorage.set('schooldatacolumns',ftdata.columns);
+						$.jStorage.set('schooldatarows',ftdata.rows);
 					}
+					getSchools(ftdata.columns,ftdata.rows);
 				}
-				if(Application.schooltoday === 'Full Day')
-				{
-					$('#schedule').html('Yes - '+Application.schooltoday);
-					$('#schedule').addClass('text-success');
-				}
-				else if(Application.schooltoday === 'No Schedule Available')
-				{
-					$('#schedule').html('We don\'t know - '+Application.schooltoday);
-					$('#schedule').addClass('text-warning');
-				}
-				else
-				{
-					$('#schedule').html('No - '+Application.schooltoday);
-					$('#schedule').addClass('text-error');
-				}
-			}
-		});
-		
-		// The School Location FT query
-		var SchoolFT = new FusionTable();
-		SchoolFT.query = encodeURIComponent(Application.schoollocationquery);
-		
-		// Construct the School Location URL
-		SchoolFT.url = ['https://www.googleapis.com/fusiontables/v1/query'];
-		SchoolFT.url.push('?sql=' + SchoolFT.query);
-		SchoolFT.url.push('&key='+Application.googlemapsapikey);
-		SchoolFT.url.push('&callback=?');
-		
-		// Get the School Location FT data!
-		$.ajax({
-			url: SchoolFT.url.join(''),
-			dataType: 'jsonp',
-			success: function (ftdata) {
-				// Copy the School Location data to the School object
-				for (var i in ftdata.rows)
-				{
-					Schools[i] = new School();
-					for(var j in ftdata.columns)
-					{
-						var colname = ftdata.columns[j];
-						Schools[i].data[colname] = ftdata.rows[i][j];
-					}
-					// Push to the location names array the name of the schools
-					// for the form input typeahead function
-					schoolnames.push(Schools[i].data.shortname);
-					// Create the Google LatLng object
-					Schools[i].latlng = new google.maps.LatLng(ftdata.rows[i][0],ftdata.rows[i][1]);
-					// Create the markers for each school
-					Schools[i].marker = new google.maps.Marker({
-						position: Schools[i].latlng,
-						map: Map.Map,
-						icon:'img/orange.png',
-						shadow:'img/msmarker.shadow.png'
-					});
-					// Info boxes
-					Schools[i].infoboxtext = '<div class="infoBox" style="border:2px solid rgb(0,0,0); margin-top:8px; background:rgb(25,25,112); padding:5px; color:white; font-size:80%;">'+
-					Schools[i].data.shortname+'<br />'+
-					Schools[i].data.address+'<br />'+
-					Schools[i].data.phone+'<br /></div>';
-					var options = {
-						content: Schools[i].infoboxtext,
-						disableAutoPan: false,
-						maxWidth: 0,
-						pixelOffset: new google.maps.Size(-140, 0),
-						zIndex: null,
-						boxStyle: {
-							background: "url('img/tipbox.gif') no-repeat",
-							opacity: 0.9,
-							width: "160px"
-						},
-						closeBoxMargin: "11px 4px 4px 4px",
-						closeBoxURL: "img/close.gif",
-						infoBoxClearance: new google.maps.Size(1, 1),
-						visible: false,
-						pane: "floatPane",
-						enableEventPropagation: false
-					};
-					// Make the info box
-					Schools[i].infobox = new InfoBox(options);
-				}
-				// Try to center on school in school input
-				centeronschool();
-				// Set up the typeahead for the school names.
-				$('#school').typeahead({
-					source:schoolnames,
-					items:3,
-					minLength:1
-				});
-			}
-		});
+			});
+		}
+		else
+		{
+			getSchools(Application.schooldatacolumns,Application.schooldatarows);
+		}
 		
 		// FUNCTIONS -------------------------------------------------------------/
+		
+		function getSchools(columns,rows)
+		{
+			// Copy the School Location data to the School object
+			for (var i in rows)
+			{
+				Schools[i] = new School();
+				for(var j in columns)
+				{
+					var colname = columns[j];
+					Schools[i].data[colname] = rows[i][j];
+				}
+				// Push to the location names array the name of the schools
+				// for the form input typeahead function
+				schoolnames.push(Schools[i].data.shortname);
+				// Create the Google LatLng object
+				Schools[i].latlng = new google.maps.LatLng(Schools[i].data.lat,Schools[i].data.lng);
+				// Create the markers for each school
+				Schools[i].marker = new google.maps.Marker({
+					position: Schools[i].latlng,
+					map: Map.Map,
+					icon:'img/orange.png',
+					shadow:'img/msmarker.shadow.png'
+				});
+				// Info boxes
+				Schools[i].infoboxtext = '<div class="infoBox" style="border:2px solid rgb(0,0,0); margin-top:8px; background:rgb(25,25,112); padding:5px; color:white; font-size:80%;">'+
+				Schools[i].data.shortname+'<br />'+
+				Schools[i].data.address+'<br />'+
+				Schools[i].data.phone+'<br /></div>';
+				var options = {
+					content: Schools[i].infoboxtext,
+					disableAutoPan: false,
+					maxWidth: 0,
+					pixelOffset: new google.maps.Size(-140, 0),
+					zIndex: null,
+					boxStyle: {
+						background: "url('img/tipbox.gif') no-repeat",
+						opacity: 0.9,
+						width: "160px"
+					},
+					closeBoxMargin: "11px 4px 4px 4px",
+					closeBoxURL: "img/close.gif",
+					infoBoxClearance: new google.maps.Size(1, 1),
+					visible: false,
+					pane: "floatPane",
+					enableEventPropagation: false
+				};
+				// Make the info box
+				Schools[i].infobox = new InfoBox(options);
+			}
+			// Try to center on school in school input
+			centeronschool();
+			// Set up the typeahead for the school names.
+			$('#school').typeahead({
+				source:schoolnames,
+				items:3,
+				minLength:1
+			});
+		}
+		
+		function getSchedule(columns,rows)
+		{
+			for (var i in rows)
+			{
+				Schedules[i] = new Schedule();
+				for(var j in columns)
+				{
+					var colname = columns[j];
+					Schedules[i].data[colname] = rows[i][j];
+				}
+			}
+			
+			var today = Today.month+'/'+Today.date+'/'+Today.year;
+			
+			for(var i in Schedules)
+			{
+				if(Schedules[i].data.date === today)
+				{
+					Application.schooltoday = Schedules[i].data.unifiedcalendar;
+					break;
+				}
+			}
+			if(Application.schooltoday === 'Full Day')
+			{
+				$('#schedule').html('Yes - '+Application.schooltoday);
+				$('#schedule').addClass('text-success');
+			}
+			else if(Application.schooltoday === 'No Schedule Available')
+			{
+				$('#schedule').html('We don\'t know - '+Application.schooltoday);
+				$('#schedule').addClass('text-warning');
+			}
+			else
+			{
+				$('#schedule').html('No - '+Application.schooltoday);
+				$('#schedule').addClass('text-error');
+			}
+		}
 		
 		// Center the map on the school in the school name input
 		function centeronschool() {
