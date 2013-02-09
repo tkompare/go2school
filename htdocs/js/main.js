@@ -123,7 +123,7 @@
 	}
 
 	//hide some stuff by Application
-	$('#grp-mylocation,#grp-travel,#grp-time').hide();
+	$('#grp-mylocation,#grp-travel,#grp-time,#grp-summary').hide();
 	
 	// The jQuery document.ready enclosure
 	$(function(){
@@ -422,6 +422,7 @@
 										var formattedAddress = results[0].formatted_address.split(',');
 										MyLocation.address = formattedAddress[0];
 										$('#mylocation').val(formattedAddress[0]);
+										$('#summary-mylocation').text(formattedAddress[0]);
 										if($.jStorage.storageAvailable())
 										{
 											$.jStorage.set('mylocation', formattedAddress[0]);
@@ -587,7 +588,6 @@
 			else
 			{
 				var meridian = 'AM';
-				console.log(Application.schoolselected.data.end);
 				var timearray = Application.schoolselected.data.end.split(':');
 				var hour = timearray[0].length === 1 ? '0' + timearray[0] : timearray[0];
 				if(hour === 12)
@@ -608,7 +608,6 @@
 		
 		// time change
 		$('#time').timepicker().on('hide.timepicker', function() {
-			console.log('change '+$('#time').val());
 			if($.jStorage.storageAvailable())
 			{
 				$.jStorage.set('time', $('#time').val());
@@ -703,12 +702,12 @@
 		// mylocation "next" button click
 		$('#mylocation-next').click(function(){
 			$('#grp-mylocation').hide();
-			//$('#grp-travel').show();
+			$('#grp-summary').show();
 		});
 		
 		// BACK BUTTONS -----------------------------------------------------------
 		
-	// time "back" button click
+		// time "back" button click
 		$('#time-back').click(function(){
 			$('#grp-time').hide();
 			$('#grp-school').show();
@@ -724,6 +723,12 @@
 		$('#mylocation-back').click(function(){
 			$('#grp-mylocation').hide();
 			$('#grp-travel').show();
+		});
+		
+		// summary "back" button click
+		$('#summary-back').click(function(){
+			$('#grp-summary').hide();
+			$('#grp-mylocation').show();
 		});
 		
 	});
