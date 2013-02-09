@@ -8,6 +8,15 @@
 	 */
 	var Application = {
 		city:'Chicago',
+		directionsoptions:{
+			suppressInfoWindows: true,
+			polylineOptions: {
+				strokeColor: '#0954cf',
+				strokeWeight: '5',
+				strokeOpacity: '.85'
+			}},
+		directionsrenderer:null,
+		directionsservice:null,
 		lat:41.85,
 		lng:-87.675,
 		state:'IL',
@@ -20,7 +29,8 @@
 		scheduledatacolumns:null,
 		scheduledatarows:null,
 		schooldatacolumns:null,
-		schooldatarows:null
+		schooldatarows:null,
+		schoolselected:null
 	};
 	
 	/**
@@ -70,6 +80,15 @@
 		year:date.getFullYear()
 	};
 	
+	// timepicker
+	$('#time').timepicker({
+		 minuteStep: 5,
+		 showInputs: false,
+		 disableFocus:true,
+		 template: 'modal',
+		 modalBackdrop: true
+	});
+	
 	var schoolnames = [];
 	
 	var Schools = [];
@@ -113,19 +132,26 @@
 		if($.jStorage.storageAvailable())
 		{
 			$('#school').val($.jStorage.get('school',''));
+			$('#summary-school').text($.jStorage.get('school',''));
+			$('#time').val($.jStorage.get('time',''));
+			$('#summary-time').text($.jStorage.get('time',''));
 			$('#mylocation').val($.jStorage.get('mylocation',''));
+			$('#summary-mylocation').text($.jStorage.get('mylocation',''));
 			var storageTravel = $.jStorage.get('travel','');
 			if(storageTravel === 'WALKING')
 			{
 				$('#travel-walking').addClass('active');
+				$('#summary-travel').text('Walking');
 			}
 			else if(storageTravel === 'TRANSIT')
 			{
 				$('#travel-transit').addClass('active');
+				$('#summary-travel').text('CTA/Metra');
 			}
 			else if(storageTravel === 'DRIVING')
 			{
 				$('#travel-driving').addClass('active');
+				$('#summary-travel').text('Driving');
 			}
 			Application.scheduledatacolumns = $.jStorage.get('scheduledatacolumns',null);
 			Application.scheduledatarows = $.jStorage.get('scheduledatarows',null);
@@ -151,6 +177,10 @@
 			zoom:Application.zoom
 		});
 		Map.initMap();
+		
+		//start up the google directions service and renderer
+		Application.directionsservice = new google.maps.DirectionsService();
+		Application.directionsrenderer = new google.maps.DirectionsRenderer(Application.directionsoptions);
 		
 		// Pan/Zoom
 		Map.setPanZoom(false);
@@ -235,6 +265,12 @@
 					var colname = columns[j];
 					Schools[i].data[colname] = rows[i][j];
 				}
+				// Set the selected school, if there is one
+				if($('#school').val() !== '' && Schools[i].data.shortname === $('#school').val())
+				{
+					Application.schoolselected = Schools[i];
+				}
+				
 				// Push to the location names array the name of the schools
 				// for the form input typeahead function
 				schoolnames.push(Schools[i].data.shortname);
@@ -485,21 +521,6 @@
 		}
 		// LISTENERS -------------------------------------------------------------/
 		
-		// school input change
-		$('#school').change(function(){
-			if($.jStorage.storageAvailable())
-			{
-				$.jStorage.set('school', $('#school').val());
-			}
-			centeronschool();
-		});
-		
-		// school "next" button click
-		$('#school-next').click(function(){
-			$('#grp-school').hide();
-			$('#grp-mylocation').show();
-		});
-		
 		// school input onblur
 		$('#school').blur(function(){
 			centeronschool();
@@ -508,6 +529,111 @@
 		// find me button click
 		$('#mylocation-gps').click(function(){
 			mylocationgps();
+		});
+		
+		// CHANGE -----------------------------------------------------------------
+		
+		// school input change
+		$('#school').change(function(){
+			if($.jStorage.storageAvailable())
+			{
+				$.jStorage.set('school', $('#school').val());
+			}
+			$('#summary-school').text($('#school').val());
+			for(var i in Schools)
+			{
+				if(Schools[i].data.shortname === $('#school').val())
+				{
+					Application.schoolselected = Schools[i];
+					break;
+				}
+			}
+			centeronschool();
+		});
+		
+		// School Start button listener
+		$('#time-start').click(function(){
+			if(Application.schoolselected.data.start === '')
+			{
+				alert('No start time');
+			}
+			else
+			{
+				var meridian = 'AM';
+				var timearray = Application.schoolselected.data.start.split(':');
+				var hour = timearray[0].length === 1 ? '0' + timearray[0] : timearray[0];
+				if(hour === 12)
+				{
+					meridian = 'PM';
+				}
+				if(hour > 12)
+				{
+					hour = hour - 12;
+					meridian = 'PM';
+				}
+				var minute = timearray[1];
+				var timestring = hour+':'+minute+' '+meridian;
+				$('#time').timepicker('setTime', timestring);
+				$('#summary-time').text(timestring);
+			}
+		});
+		
+	// School Start button listener
+		$('#time-end').click(function(){
+			if(Application.schoolselected.data.end === '')
+			{
+				alert('No end time');
+			}
+			else
+			{
+				var meridian = 'AM';
+				console.log(Application.schoolselected.data.end);
+				var timearray = Application.schoolselected.data.end.split(':');
+				var hour = timearray[0].length === 1 ? '0' + timearray[0] : timearray[0];
+				if(hour === 12)
+				{
+					meridian = 'PM';
+				}
+				if(hour > 12)
+				{
+					hour = hour - 12;
+					meridian = 'PM';
+				}
+				var minute = timearray[1];
+				var timestring = hour+':'+minute+' '+meridian;
+				$('#time').timepicker('setTime', timestring);
+				$('#summary-time').text(timestring);
+			}
+		});
+		
+		// time change
+		$('#time').timepicker().on('hide.timepicker', function() {
+			console.log('change '+$('#time').val());
+			if($.jStorage.storageAvailable())
+			{
+				$.jStorage.set('time', $('#time').val());
+			}
+			$('#summary-time').text($('#time').val());
+		});
+		
+		// travel change
+		$('.travel').on('click', function() {
+			if($.jStorage.storageAvailable())
+			{
+				$.jStorage.set('travel', $(this).val());
+			}
+			if($(this).val() === 'WALKING')
+			{
+				$('#summary-travel').text('Walking');
+			}
+			else if($(this).val() === 'TRANSIT')
+			{
+				$('#summary-travel').text('CTA/Metra');
+			}
+			else if($(this).val() === 'DRIVING')
+			{
+				$('#summary-travel').text('Driving');
+			}
 		});
 		
 		// mylocation input change
@@ -523,6 +649,7 @@
 			{
 				$.jStorage.set('mylocation', $('#mylocation').val());
 			}
+			$('#summary-mylocation').text($('#mylocation').val());
 			if($('#mylocation').val() !== MyLocation.address)
 			{
 				var geocoder = new google.maps.Geocoder();
@@ -553,24 +680,50 @@
 			}
 		});
 		
-		// mylocation "next" button click
-		$('#mylocation-next').click(function(){
-			$('#grp-mylocation').hide();
+		// NEXT BUTTONS -----------------------------------------------------------
+		
+		// school "next" button click
+		$('#school-next').click(function(){
+			$('#grp-school').hide();
+			$('#grp-time').show();
+		});
+		
+		// time "next" button click
+		$('#time-next').click(function(){
+			$('#grp-time').hide();
 			$('#grp-travel').show();
 		});
 		
 		// travel "next" button click
-		$('#time-next').click(function(){
-			$('#grp-time').hide();
-			//$('#grp-').show();
+		$('#travel-next').click(function(){
+			$('#grp-travel').hide();
+			$('#grp-mylocation').show();
 		});
 		
-		// travel change
-		$('.travel').on('click', function() {
-			if($.jStorage.storageAvailable())
-			{
-				$.jStorage.set('travel', $(this).val());
-			}
+		// mylocation "next" button click
+		$('#mylocation-next').click(function(){
+			$('#grp-mylocation').hide();
+			//$('#grp-travel').show();
+		});
+		
+		// BACK BUTTONS -----------------------------------------------------------
+		
+	// time "back" button click
+		$('#time-back').click(function(){
+			$('#grp-time').hide();
+			$('#grp-school').show();
+		});
+		
+		// travel "back" button click
+		$('#travel-back').click(function(){
+			$('#grp-travel').hide();
+			$('#grp-time').show();
+		});
+		
+		// mylocation "back" button click
+		$('#mylocation-back').click(function(){
+			$('#grp-mylocation').hide();
+			$('#grp-travel').show();
 		});
 		
 	});
