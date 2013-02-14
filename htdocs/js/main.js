@@ -25,7 +25,7 @@
 		schooltoday:'No Schedule Available',
 		googlemapsapikey:'AIzaSyDH5WuL3gKYVBWVqLr6g3PQffdZE-XhBUw',
 		schoolschedulequery:'SELECT date, dayofweek, unifiedcalendar FROM 1u765vIMSPecSEinBe1H6JPYSFE5ljbAW1Mq3okc',
-		schoollocationquery:'SELECT lat, lng, shortname, address, postalcode, phone, start, end, afterstart, afterend FROM 1QQu0GHzbkKk5OdAl2VaaY2sm1Ggoc8Vo5GfiGLI',
+		schoollocationquery:'SELECT lat, lng, longname, address, postalcode, phone, start, end, afterstart, afterend FROM 1qCOcgrhGwjt6bdx_UVPSkyIMMVD-1C7CJFvpIjI',
 		scheduledatacolumns:null,
 		scheduledatarows:null,
 		schooldatacolumns:null,
@@ -266,14 +266,14 @@
 					Schools[i].data[colname] = rows[i][j];
 				}
 				// Set the selected school, if there is one
-				if($('#school').val() !== '' && Schools[i].data.shortname === $('#school').val())
+				if($('#school').val() !== '' && Schools[i].data.longname === $('#school').val())
 				{
 					Application.schoolselected = Schools[i];
 				}
 				
 				// Push to the location names array the name of the schools
 				// for the form input typeahead function
-				schoolnames.push(Schools[i].data.shortname);
+				schoolnames.push(Schools[i].data.longname);
 				// Create the Google LatLng object
 				Schools[i].latlng = new google.maps.LatLng(Schools[i].data.lat,Schools[i].data.lng);
 				// Create the markers for each school
@@ -285,7 +285,7 @@
 				});
 				// Info boxes
 				Schools[i].infoboxtext = '<div class="infoBox" style="border:2px solid rgb(0,0,0); margin-top:8px; background:rgb(25,25,112); padding:5px; color:white; font-size:80%;">'+
-				Schools[i].data.shortname+'<br />'+
+				Schools[i].data.longname+'<br />'+
 				Schools[i].data.address+'<br />'+
 				Schools[i].data.phone+'<br /></div>';
 				var options = {
@@ -364,7 +364,7 @@
 			{
 				for(var i in Schools)
 				{
-					if(Schools[i].data.shortname === $('#school').val())
+					if(Schools[i].data.longname === $('#school').val())
 					{
 						Map.Map.setCenter(Schools[i].latlng);
 						Schools[i].infobox.open(Map.Map,Schools[i].marker);
@@ -543,7 +543,7 @@
 			$('#summary-school').text($('#school').val());
 			for(var i in Schools)
 			{
-				if(Schools[i].data.shortname === $('#school').val())
+				if(Schools[i].data.longname === $('#school').val())
 				{
 					Application.schoolselected = Schools[i];
 					break;
