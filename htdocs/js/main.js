@@ -122,8 +122,8 @@
 		this.url = [];
 	}
 
-	//hide some stuff by Application
-	$('#grp-mylocation,#grp-travel,#grp-time,#grp-summary').hide();
+	// hide some stuff to start with
+	$('#grp-school,#grp-mylocation,#grp-travel,#grp-time,#grp-summary').hide();
 	
 	// The jQuery document.ready enclosure
 	$(function(){
@@ -142,16 +142,22 @@
 			{
 				$('#travel-walking').addClass('active');
 				$('#summary-travel').text('Walking');
+				$('#travel-walking-icon').html('<i class="icon-ok icon-white"></i> ');
+
 			}
 			else if(storageTravel === 'TRANSIT')
 			{
 				$('#travel-transit').addClass('active');
 				$('#summary-travel').text('CTA/Metra');
+				$('#travel-transit-icon').html('<i class="icon-ok icon-white"></i> ');
+
 			}
 			else if(storageTravel === 'DRIVING')
 			{
 				$('#travel-driving').addClass('active');
 				$('#summary-travel').text('Driving');
+				$('#travel-driving-icon').html('<i class="icon-ok icon-white"></i> ');
+
 			}
 			Application.scheduledatacolumns = $.jStorage.get('scheduledatacolumns',null);
 			Application.scheduledatarows = $.jStorage.get('scheduledatarows',null);
@@ -284,10 +290,11 @@
 					shadow:'img/msmarker.shadow.png'
 				});
 				// Info boxes
+				var phone = String(Schools[i].data.phone).replace('/[^0-9]/','');
 				Schools[i].infoboxtext = '<div class="infoBox" style="border:2px solid rgb(0,0,0); margin-top:8px; background:rgb(25,25,112); padding:5px; color:white; font-size:80%;">'+
 				Schools[i].data.longname+'<br />'+
 				Schools[i].data.address+'<br />'+
-				Schools[i].data.phone+'<br /></div>';
+				'<b><a href="tel:'+phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'" style="color:white; font-size:125%; text-decoration:underline">'+phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'</a></b><br /></div>';
 				var options = {
 					content: Schools[i].infoboxtext,
 					disableAutoPan: false,
@@ -301,7 +308,7 @@
 					},
 					closeBoxMargin: "11px 4px 4px 4px",
 					closeBoxURL: "img/close.gif",
-					infoBoxClearance: new google.maps.Size(1, 1),
+					infoBoxClearance: new google.maps.Size(20, 30),
 					visible: false,
 					pane: "floatPane",
 					enableEventPropagation: false
@@ -317,6 +324,7 @@
 				items:3,
 				minLength:1
 			});
+			window.scrollTo(0, 1);
 		}
 		
 		function getSchedule(columns,rows)
@@ -343,17 +351,17 @@
 			}
 			if(Application.schooltoday === 'Full Day')
 			{
-				$('#schedule').html('Yes - '+Application.schooltoday);
+				$('#schedule').html(Application.schooltoday+' Today');
 				$('#schedule').addClass('text-success');
 			}
 			else if(Application.schooltoday === 'No Schedule Available')
 			{
-				$('#schedule').html('We don\'t know - '+Application.schooltoday);
+				$('#schedule').html(Application.schooltoday+', so we don\'t know.');
 				$('#schedule').addClass('text-warning');
 			}
 			else
 			{
-				$('#schedule').html('No - '+Application.schooltoday);
+				$('#schedule').html(Application.schooltoday+' Today');
 				$('#schedule').addClass('text-error');
 			}
 		}
@@ -364,10 +372,13 @@
 			{
 				for(var i in Schools)
 				{
-					if(Schools[i].data.longname === $('#school').val())
+					if(Schools[i].data.longname === Application.schoolselected.data.longname)
 					{
+						$('#time-start-icon,#time-end-icon').text('');
 						Map.Map.setCenter(Schools[i].latlng);
 						Schools[i].infobox.open(Map.Map,Schools[i].marker);
+						$('#time-start-time').text(' - '+formattime(Application.schoolselected.data.start));
+						$('#time-end-time').text(' - '+formattime(Application.schoolselected.data.end));
 					}
 					else
 					{
@@ -393,8 +404,10 @@
 		}
 		
 		// Get address from GPS
-		function mylocationgps() {
-			function alertError() {
+		function mylocationgps()
+		{
+			function alertError()
+			{
 				alert('We\'re sorry. We could not find an address for this location.');
 			}
 			if(gps)
@@ -455,7 +468,8 @@
 		}
 		
 		// Put a Pan/Zoom control on the map
-		function PanZoomControl(controlDiv) {
+		function PanZoomControl(controlDiv)
+		{
 			// Set CSS styles for the DIV containing the control
 			// Setting padding to 5 px will offset the control
 			// from the edge of the map.
@@ -520,6 +534,25 @@
 				}
 			});
 		}
+		
+		function formattime(time)
+		{
+			var meridian = 'AM';
+			var timearray = time.split(':');
+			var hour = timearray[0].length === 1 ? '0' + timearray[0] : timearray[0];
+			if(hour === 12)
+			{
+				meridian = 'PM';
+			}
+			if(hour > 12)
+			{
+				hour = hour - 12;
+				meridian = 'PM';
+			}
+			var minute = timearray[1];
+			var timestring = hour+':'+minute+' '+meridian;
+			return timestring;
+		}
 		// LISTENERS -------------------------------------------------------------/
 		
 		// school input onblur
@@ -560,26 +593,19 @@
 			}
 			else
 			{
-				var meridian = 'AM';
-				var timearray = Application.schoolselected.data.start.split(':');
-				var hour = timearray[0].length === 1 ? '0' + timearray[0] : timearray[0];
-				if(hour === 12)
-				{
-					meridian = 'PM';
-				}
-				if(hour > 12)
-				{
-					hour = hour - 12;
-					meridian = 'PM';
-				}
-				var minute = timearray[1];
-				var timestring = hour+':'+minute+' '+meridian;
+				$('#time-end-icon').text('');
+				$('#time-start-icon').html('<i class="icon-ok icon-white"></i> ');
+				var timestring = formattime(Application.schoolselected.data.start);
 				$('#time').timepicker('setTime', timestring);
 				$('#summary-time').text(timestring);
+				if($.jStorage.storageAvailable())
+				{
+					$.jStorage.set('time', timestring);
+				}
 			}
 		});
 		
-	// School Start button listener
+		// School Start button listener
 		$('#time-end').click(function(){
 			if(Application.schoolselected.data.end === '')
 			{
@@ -587,22 +613,15 @@
 			}
 			else
 			{
-				var meridian = 'AM';
-				var timearray = Application.schoolselected.data.end.split(':');
-				var hour = timearray[0].length === 1 ? '0' + timearray[0] : timearray[0];
-				if(hour === 12)
-				{
-					meridian = 'PM';
-				}
-				if(hour > 12)
-				{
-					hour = hour - 12;
-					meridian = 'PM';
-				}
-				var minute = timearray[1];
-				var timestring = hour+':'+minute+' '+meridian;
+				$('#time-start-icon').text('');
+				$('#time-end-icon').html('<i class="icon-ok icon-white"></i> ');
+				var timestring = formattime(Application.schoolselected.data.end);
 				$('#time').timepicker('setTime', timestring);
 				$('#summary-time').text(timestring);
+				if($.jStorage.storageAvailable())
+				{
+					$.jStorage.set('time', timestring);
+				}
 			}
 		});
 		
@@ -613,7 +632,11 @@
 				$.jStorage.set('time', $('#time').val());
 			}
 			$('#summary-time').text($('#time').val());
+			$('#time-start-icon,#time-end-icon').text('');
+			$('#time-start,#time-end').removeClass('active');
 		});
+		
+		
 		
 		// travel change
 		$('.travel').on('click', function() {
@@ -624,14 +647,20 @@
 			if($(this).val() === 'WALKING')
 			{
 				$('#summary-travel').text('Walking');
+				$('#travel-walking-icon').html('<i class="icon-ok icon-white"></i> ');
+				$('#travel-transit-icon,#travel-driving-icon').text('');
 			}
 			else if($(this).val() === 'TRANSIT')
 			{
 				$('#summary-travel').text('CTA/Metra');
+				$('#travel-transit-icon').html('<i class="icon-ok icon-white"></i> ');
+				$('#travel-walking-icon,#travel-driving-icon').text('');
 			}
 			else if($(this).val() === 'DRIVING')
 			{
 				$('#summary-travel').text('Driving');
+				$('#travel-driving-icon').html('<i class="icon-ok icon-white"></i> ');
+				$('#travel-walking-icon,#travel-transit-icon').text('');
 			}
 		});
 		
@@ -680,6 +709,12 @@
 		});
 		
 		// NEXT BUTTONS -----------------------------------------------------------
+		
+		// intro "start" button click
+		$('#intro-start').click(function(){
+			$('#grp-intro').hide();
+			$('#grp-school').show();
+		});
 		
 		// school "next" button click
 		$('#school-next').click(function(){
