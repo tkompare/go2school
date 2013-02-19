@@ -23,6 +23,7 @@
 		styles:'grey minlabels',
 		zoom:14,
 		schooltoday:'No Schedule Available',
+		schooltomorrow:'No Schedule Available',
 		googlemapsapikey:'AIzaSyDH5WuL3gKYVBWVqLr6g3PQffdZE-XhBUw',
 		schoolschedulequery:'SELECT date, dayofweek, unifiedcalendar FROM 1u765vIMSPecSEinBe1H6JPYSFE5ljbAW1Mq3okc',
 		schoollocationquery:'SELECT lat, lng, longname, address, postalcode, phone, start, end, afterstart, afterend FROM 1qCOcgrhGwjt6bdx_UVPSkyIMMVD-1C7CJFvpIjI',
@@ -79,6 +80,15 @@
 		date:date.getDate(),
 		year:date.getFullYear()
 	};
+	
+	var tomorrowDate = new Date(date.getTime() + (24 * 60 * 60 * 1000));
+	
+	var Tomorrow = {
+		month:tomorrowDate.getMonth()+1,
+		date:tomorrowDate.getDate(),
+		year:tomorrowDate.getFullYear()
+	}
+	
 	
 	// timepicker
 	$('#time').timepicker({
@@ -340,13 +350,17 @@
 			}
 			
 			var today = Today.month+'/'+Today.date+'/'+Today.year;
+			var tomorrow = Tomorrow.month+'/'+Tomorrow.date+'/'+Tomorrow.year;
 			
 			for(var i in Schedules)
 			{
 				if(Schedules[i].data.date === today)
 				{
 					Application.schooltoday = Schedules[i].data.unifiedcalendar;
-					break;
+				}
+				if(Schedules[i].data.date === tomorrow)
+				{
+					Application.schooltomorrow = Schedules[i].data.unifiedcalendar;
 				}
 			}
 			if(Application.schooltoday === 'Full Day')
@@ -363,6 +377,21 @@
 			{
 				$('#schedule').html(Application.schooltoday+' Today');
 				$('#schedule').addClass('text-error');
+			}
+			if(Application.schooltomorrow === 'Full Day')
+			{
+				$('#schedule-tomorrow').html(Application.schooltomorrow+' Tomorrow');
+				$('#schedule-tomorrow').addClass('text-success');
+			}
+			else if(Application.schooltomorrow === 'No Schedule Available')
+			{
+				$('#schedule-tomorrow').html(Application.schooltomorrow+', so we don\'t know.');
+				$('#schedule-tomorrow').addClass('text-warning');
+			}
+			else
+			{
+				$('#schedule-tomorrow').html(Application.schooltomorrow+' Tomorrow');
+				$('#schedule-tomorrow').addClass('text-error');
 			}
 		}
 		
