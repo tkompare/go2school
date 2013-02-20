@@ -558,7 +558,7 @@
 					Map.setPanZoom(true);
 					Map.setTouchScroll(false);
 					var cntr = Map.Map.getCenter();
-					$('#before-map,#div-footer').hide(750,function(){
+					$('#before-map,#div-footer,#twitter').hide(750,function(){
 						$('#map-width').css('height','100%');
 						$('#map-ratio').css('margin-top', window.innerHeight);
 						$('#div-map').offset().top;
@@ -577,13 +577,14 @@
 					Map.setPanZoom(false);
 					Map.setTouchScroll(true);
 					var cntr = Map.Map.getCenter();
-					$('#before-map,#div-footer').show(750,function(){
+					$('#before-map,#div-footer,#twitter').show(750,function(){
 						$('#map-width').css('height','');
 						$('#map-ratio').css('margin-top','200px');
 						controlUI.title = 'Click to interact with the map.';
 						controlText.innerHTML = 'Explore Map';
 						Map.Map.setCenter(cntr);
 						google.maps.event.trigger(Map.Map, 'resize');
+						window.scrollTo(0, 1);
 					});
 					for(var i in Schools)
 					{
