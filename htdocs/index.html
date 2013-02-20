@@ -4,6 +4,7 @@
 <meta charset=utf-8>
 <meta name=viewport content="width=device-width, initial-scale=1, maximum-scale=1 minimum-scale=1">
 <meta http-equiv=X-UA-Compatible content="IE=edge" />
+<link rel="apple-touch-icon-precomposed" href="img/icon.png" />
 <!--[if lt IE 9]>
 <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
 <![endif]-->
@@ -22,14 +23,16 @@
 	<div class=row-fluid>
 		<div id=before-map class=span12>
 			<h2 class=center>Go To School!</h2>
-			<div class=center><h5><span id=schedule></span></h5></div>
-			<div class=center><h5><span id=schedule-tomorrow></span></h5></div>
+			<div id=isschool>
+				<div class=center><h5><span id=schedule></span></h5></div>
+				<div class=center><h5><span id=schedule-tomorrow></span></h5></div>
+			</div>
 			<div id=grp-intro class="control-group center padded margin2">
 				<p class="center padded margin2"><span id=intro-text>Answer four questions and get to your Chicago public school on time.</span></p>
 				<button id=intro-start class="btn btn-large btn-primary">Start</button>
 			</div>
 			<div id=grp-school class="control-group center padded margin2">
-				<h4><label class=control-label for=school>What's the name of your school?</label></h4>
+				<label class=control-label for=school><h4>What's the name of your school?</h4></label>
 				<div class=controls>
 					<input id=school class=span10 type=text placeholder="Name of school" />
 				</div>
@@ -40,7 +43,7 @@
 				<span id=loading class=label>Loading Data...</span>
 			</div>
 			<div id=grp-time class=margin2>
-				<h4 class=center>What time do you want to get there?</h4>
+				<h4 class=center>What time do you want to arrive?</h4>
 				<div class="padded margin2" data-toggle=buttons-radio>
 					<span class=span6><button id=time-start name=travel value=start class="btn btn-large btn-primary btn-block"><span id=time-start-icon></span>Start of school<span id=time-start-time></span></button></span>
 					<span class=span6><button id=time-end name=travel value=end class="btn btn-large btn-primary btn-block"><span id=time-end-icon></span>End of school<span id=time-end-time></span></button></span>
@@ -64,8 +67,7 @@
 					<span class=span4><button id=travel-walking name=travel value=WALKING class="btn btn-large btn-primary btn-block travel"><span id=travel-walking-icon></span>Walking</button></span>
 					<span class=span4><button id=travel-transit name=travel value=TRANSIT class="btn btn-large btn-primary btn-block travel"><span id=travel-transit-icon></span>CTA/Metra</button></span>
 					<span class=span4><button id=travel-driving name=travel value=DRIVING class="btn btn-large btn-primary btn-block travel"><span id=travel-driving-icon></span>Driving</button></span>
-					<br>
-					<p class="center margin2">For more information, visit <a href="http://transitchicago.com">transitchicago.org</a></p>
+					&nbsp;<br>
 				</div>
 				<div class="center margin2">
 					<button id=travel-back class="btn btn-large btn-primary">Back</button>
@@ -87,10 +89,10 @@
 			<div id="grp-summary">
 				<div class="span6 offset3 margin2">
 				<table class="table">
-					<tr><td><b>Name of School:</b></td><td><span id="summary-school"></span></td></tr>
-					<tr><td><b>Time to Arrive:</b></td><td><span id="summary-time"></span></td></tr>
-					<tr><td><b>Travel Mode:</b></td><td><span id="summary-travel"></span></td></tr>
-					<tr><td><b>Leaving From:</b></td><td><span id="summary-mylocation"></span></td></tr>
+					<tr><td><b>Name of School:</b></td><td><span id=summary-school></span><button id=summary-school-btn class="btn btn-mini pull-right" type="button">Edit</button></td></tr>
+					<tr><td><b>Time to Arrive:</b></td><td><span id=summary-time></span><button id=summary-time-btn class="btn btn-mini pull-right" type="button">Edit</button></td></tr>
+					<tr><td><b>Travel Mode:</b></td><td><span id=summary-travel></span><button id=summary-travel-btn class="btn btn-mini pull-right" type="button">Edit</button></td></tr>
+					<tr><td><b>Leaving From:</b></td><td><span id=summary-mylocation></span><button id=summary-mylocation-btn class="btn btn-mini pull-right" type="button">Edit</button></td></tr>
 				</table>
 				</div>
 				<div class="span12 center margin2">
@@ -102,6 +104,7 @@
 	</div>
 	<p class="padded">
 		<a href="https://twitter.com/share" class="twitter-share-button" data-text="Find your way to a @ChiPubSchools school." data-url="http://go2school.smartchicagoapps.org" data-related="tomkompare:Author of GoToSchool,chipubschools:Offical Account of CPS,opengovchicago:A meetup group for government and community members" data-lang="en" data-size="small" data-count="none">Tweet</a>
+		<span id=sick class=pull-right>Report Absence: <span id=sick-tel></span></span>
 	</p>
 	<div id=div-map class=row-fluid>
 		<div id=the-map class=span12>

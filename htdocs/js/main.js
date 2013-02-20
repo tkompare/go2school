@@ -41,6 +41,18 @@
 	var gps = navigator.geolocation;
 	
 	/**
+	 *  Is the browser android or iphone?
+	 */
+	var isPhone = false;
+	var ua = navigator.userAgent.toLowerCase();
+	var isAndroid = ua.indexOf("android") > -1;
+	if(navigator.userAgent.match(/iPhone/i) || isAndroid)
+	{
+		isPhone = true;
+	}
+	
+	
+	/**
 	 * Hold the user's location information
 	 * @type object
 	 */
@@ -131,14 +143,12 @@
 		this.query = null;
 		this.url = [];
 	}
-
-	// hide some stuff to start with
-	$('#grp-school,#grp-mylocation,#grp-travel,#grp-time,#grp-summary').hide();
 	
 	// The jQuery document.ready enclosure
 	$(function(){
 		
 		// See if local storage has any values to fill in the form with
+		var storageTravel = '';
 		if($.jStorage.storageAvailable())
 		{
 			$('#school').val($.jStorage.get('school',''));
@@ -147,7 +157,7 @@
 			$('#summary-time').text($.jStorage.get('time',''));
 			$('#mylocation').val($.jStorage.get('mylocation',''));
 			$('#summary-mylocation').text($.jStorage.get('mylocation',''));
-			var storageTravel = $.jStorage.get('travel','');
+			storageTravel = $.jStorage.get('travel','');
 			if(storageTravel === 'WALKING')
 			{
 				$('#travel-walking').addClass('active');
@@ -175,6 +185,15 @@
 			Application.schooldatarows = $.jStorage.get('schooldatarows',null);
 		}
 		
+		// hide some stuff to start with
+		if($('#school').val() !== '' && $('#time').val() !== '' && $('#mylocation').val() !== '' && storageTravel !== '')
+		{
+			$('#grp-intro,#grp-school,#grp-travel,#grp-time,#grp-mylocation,#sick').hide();
+		}
+		else
+		{
+			$('#grp-school,#grp-travel,#grp-time,#grp-mylocation,#grp-summary,#sick').hide();
+		}
 		// Set up the loading message
 		$('#loading').hide();
 		$(document).ajaxStart(function() {
@@ -304,7 +323,7 @@
 				Schools[i].infoboxtext = '<div class="infoBox" style="border:2px solid rgb(0,0,0); margin-top:8px; background:rgb(25,25,112); padding:5px; color:white; font-size:80%;">'+
 				Schools[i].data.longname+'<br />'+
 				Schools[i].data.address+'<br />'+
-				'<b><a href="tel:'+phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'" style="color:white; font-size:125%; text-decoration:underline">'+phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'</a></b><br /></div>';
+				phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'<br /></div>';
 				var options = {
 					content: Schools[i].infoboxtext,
 					disableAutoPan: false,
@@ -408,6 +427,16 @@
 						Schools[i].infobox.open(Map.Map,Schools[i].marker);
 						$('#time-start-time').text(' - '+formattime(Application.schoolselected.data.start));
 						$('#time-end-time').text(' - '+formattime(Application.schoolselected.data.end));
+						var phone = String(Schools[i].data.phone).replace('/[^0-9]/','');
+						if(isPhone)
+						{
+							$('#sick-tel').html('<a href="tel:+1'+phone+'">'+phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'</a>');
+						}
+						else
+						{
+							$('#sick-tel').text(phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4));
+						}
+						$('#sick').show();
 					}
 					else
 					{
@@ -608,6 +637,9 @@
 				if(Schools[i].data.longname === $('#school').val())
 				{
 					Application.schoolselected = Schools[i];
+					var phone = String(Schools[i].data.phone).replace('/[^0-9]/','');
+					$('#sick-tel').text(phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4));
+					$('#sick').show();
 					break;
 				}
 			}
@@ -741,32 +773,37 @@
 		
 		// intro "start" button click
 		$('#intro-start').click(function(){
-			$('#grp-intro').hide();
+			$('#grp-intro,#isschool').hide();
 			$('#grp-school').show();
+			window.scrollTo(0, 1);
 		});
 		
 		// school "next" button click
 		$('#school-next').click(function(){
 			$('#grp-school').hide();
 			$('#grp-time').show();
+			window.scrollTo(0, 1);
 		});
 		
 		// time "next" button click
 		$('#time-next').click(function(){
 			$('#grp-time').hide();
 			$('#grp-travel').show();
+			window.scrollTo(0, 1);
 		});
 		
 		// travel "next" button click
 		$('#travel-next').click(function(){
 			$('#grp-travel').hide();
 			$('#grp-mylocation').show();
+			window.scrollTo(0, 1);
 		});
 		
 		// mylocation "next" button click
 		$('#mylocation-next').click(function(){
 			$('#grp-mylocation').hide();
-			$('#grp-summary').show();
+			$('#grp-summary,#isschool').show();
+			window.scrollTo(0, 1);
 		});
 		
 		// BACK BUTTONS -----------------------------------------------------------
@@ -775,26 +812,56 @@
 		$('#time-back').click(function(){
 			$('#grp-time').hide();
 			$('#grp-school').show();
+			window.scrollTo(0, 1);
 		});
 		
 		// travel "back" button click
 		$('#travel-back').click(function(){
 			$('#grp-travel').hide();
 			$('#grp-time').show();
+			window.scrollTo(0, 1);
 		});
 		
 		// mylocation "back" button click
 		$('#mylocation-back').click(function(){
 			$('#grp-mylocation').hide();
 			$('#grp-travel').show();
+			window.scrollTo(0, 1);
 		});
 		
 		// summary "back" button click
 		$('#summary-back').click(function(){
-			$('#grp-summary').hide();
+			$('#grp-summary,#isschool').hide();
 			$('#grp-mylocation').show();
+			window.scrollTo(0, 1);
 		});
 		
+		// SUMMARY BUTTONS --------------------------------------------------------
+		
+		$('#summary-school-btn').click(function(){
+			$('#grp-summary,#isschool').hide();
+			$('#grp-school').show();
+			window.scrollTo(0, 1);
+		});
+		
+		$('#summary-time-btn').click(function(){
+			$('#grp-summary,#isschool').hide();
+			$('#grp-time').show();
+			window.scrollTo(0, 1);
+		});
+		
+		$('#summary-travel-btn').click(function(){
+			$('#grp-summary,#isschool').hide();
+			$('#grp-travel').show();
+			window.scrollTo(0, 1);
+		});
+		
+		$('#summary-mylocation-btn').click(function(){
+			$('#grp-summary,#isschool').hide();
+			$('#grp-mylocation').show();
+			window.scrollTo(0, 1);
+		});
+	
 	});
 	
 })();
