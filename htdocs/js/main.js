@@ -8,20 +8,22 @@
 	 */
 	var Application = {
 		city:'Chicago',
+		check:'<i class="icon-ok icon-white"></i> ',
 		directionsoptions:{
 			suppressInfoWindows: true,
-			polylineOptions: {
+			polylineOptions:{
 				strokeColor: '#0954cf',
 				strokeWeight: '5',
 				strokeOpacity: '.85'
 			}},
 		directionsrenderer:null,
 		directionsservice:null,
+		domid:'map',
+		fturl:'https://www.googleapis.com/fusiontables/v1/query',
 		lat:41.85,
 		lng:-87.675,
 		state:'IL',
 		styles:'grey minlabels',
-		zoom:14,
 		schooltoday:'No Schedule Available',
 		schooltomorrow:'No Schedule Available',
 		googlemapsapikey:'AIzaSyDH5WuL3gKYVBWVqLr6g3PQffdZE-XhBUw',
@@ -31,7 +33,15 @@
 		scheduledatarows:null,
 		schooldatacolumns:null,
 		schooldatarows:null,
-		schoolselected:null
+		schoolselected:null,
+		timepicker:{
+			minuteStep:5,
+			showInputs:false,
+			disableFocus:true,
+			template:'modal',
+			modalBackdrop:true
+		},
+		zoom:14
 	};
 	
 	/**
@@ -42,15 +52,9 @@
 	
 	/**
 	 *  Is the browser android or iphone?
+	 *  @type boolean
 	 */
-	var isPhone = false;
-	var ua = navigator.userAgent.toLowerCase();
-	var isAndroid = ua.indexOf("android") > -1;
-	if(navigator.userAgent.match(/iPhone/i) || isAndroid)
-	{
-		isPhone = true;
-	}
-	
+	var isPhone = (navigator.userAgent.match(/iPhone/i) || (navigator.userAgent.toLowerCase().indexOf("android") > -1)) ? true : false;
 	
 	/**
 	 * Hold the user's location information
@@ -71,78 +75,109 @@
 	
 	/**
 	 * Schedule information for each day
-	 * @type object
+	 * @type class
 	 */
-	function Schedule() {
-		this.data = [];
-	}
+	var Schedule = (function(){
+		var constructor = function() {
+			this.data = [];
+		};
+		return constructor;
+	})();
+	
+	/**
+	 * Date formatting class
+	 * @type class
+	 */
+	var FormattedDate = (function(){
+		var constructor = function(date)
+		{
+			this.month = date.getMonth()+1;
+			this.date = date.getDate();
+			this.year = date.getFullYear();
+		};
+		return constructor;
+	})();
 	
 	/**
 	 * Today's date
 	 * @type object
 	 */
-	var date = new Date();
+	var todayDate = new Date();
 	
 	/**
 	 * Today's formatted date
 	 * @type object
 	 */
-	var Today = {
-		month:date.getMonth()+1,
-		date:date.getDate(),
-		year:date.getFullYear()
-	};
+	var Today = new FormattedDate(todayDate);
 	
-	var tomorrowDate = new Date(date.getTime() + (24 * 60 * 60 * 1000));
+	/**
+	 * Tomorrow's date
+	 * @type object
+	 */
+	var tomorrowDate = new Date(todayDate.getTime() + (86400000));
 	
-	var Tomorrow = {
-		month:tomorrowDate.getMonth()+1,
-		date:tomorrowDate.getDate(),
-		year:tomorrowDate.getFullYear()
-	}
+	/**
+	 * Tomorrow's formatted date
+	 * @type object
+	 */
+	var Tomorrow = new FormattedDate(tomorrowDate);
 	
+	// Timepicker defaults
+	$('#time').timepicker(Application.timepicker);
 	
-	// timepicker
-	$('#time').timepicker({
-		 minuteStep: 5,
-		 showInputs: false,
-		 disableFocus:true,
-		 template: 'modal',
-		 modalBackdrop: true
-	});
-	
+	/**
+	 * Array of School names to be used in question drop-down
+	 */
 	var schoolnames = [];
 	
+	/**
+	 * Array of School objects
+	 * @type array
+	 */
 	var Schools = [];
 	
-	function School()
-	{
-		this.data = {};
-		this.latlng = null;
-		this.marker = null;
-		this.infobox = null;
-		this.infoboxtext = null;
-		
-		this.toggleInfoBox = function(Map,Marker,InfoBox)
+	/**
+	 * School class
+	 * @type class
+	 */
+	var School = (function(){
+		var constructor = function()
 		{
-			return function(){
-				if(InfoBox.visible)
-				{
-					InfoBox.close(Map,Marker);
-				}
-				else
-				{
-					InfoBox.open(Map,Marker);
-				}
+			this.data = {};
+			this.latlng = null;
+			this.marker = null;
+			this.infobox = null;
+			this.infoboxtext = null;
+			
+			this.toggleInfoBox = function(Map,Marker,InfoBox)
+			{
+				return function(){
+					if(InfoBox.visible)
+					{
+						InfoBox.close(Map,Marker);
+					}
+					else
+					{
+						InfoBox.open(Map,Marker);
+					}
+				};
 			};
 		};
-	}
+		return constructor;
+	})();
 	
-	function FusionTable()
-	{
-		this.query = null;
-		this.url = [];
-	}
+	/**
+	 * Fusion Table connection
+	 * @type object
+	 */
+	var FusionTable = (function(){
+		var constructor = function()
+		{
+			this.query = null;
+			this.url = [];
+		};
+		return constructor;
+	})();
 	
 	// The jQuery document.ready enclosure
 	$(function(){
@@ -162,21 +197,21 @@
 			{
 				$('#travel-walking').addClass('active');
 				$('#summary-travel').text('Walking');
-				$('#travel-walking-icon').html('<i class="icon-ok icon-white"></i> ');
+				$('#travel-walking-icon').html(Application.check);
 
 			}
 			else if(storageTravel === 'TRANSIT')
 			{
 				$('#travel-transit').addClass('active');
 				$('#summary-travel').text('CTA/Metra');
-				$('#travel-transit-icon').html('<i class="icon-ok icon-white"></i> ');
+				$('#travel-transit-icon').html(Application.check);
 
 			}
 			else if(storageTravel === 'DRIVING')
 			{
 				$('#travel-driving').addClass('active');
 				$('#summary-travel').text('Driving');
-				$('#travel-driving-icon').html('<i class="icon-ok icon-white"></i> ');
+				$('#travel-driving-icon').html(Application.check);
 
 			}
 			Application.scheduledatacolumns = $.jStorage.get('scheduledatacolumns',null);
@@ -185,10 +220,10 @@
 			Application.schooldatarows = $.jStorage.get('schooldatarows',null);
 		}
 		
-		// hide some stuff to start with
+		// If the form is completely filled out, go straight to the summary view
 		if($('#school').val() !== '' && $('#time').val() !== '' && $('#mylocation').val() !== '' && storageTravel !== '')
 		{
-			$('#grp-intro,#grp-school,#grp-travel,#grp-time,#grp-mylocation,#sick').hide();
+			$('#grp-intro,#grp-school,#grp-travel,#grp-time,#grp-mylocation').hide();
 		}
 		else
 		{
@@ -205,7 +240,7 @@
 		
 		// The Google map base layer object
 		var Map = new TkMap({
-			domid:'map',
+			domid:Application.domid,
 			lat:Application.lat,
 			lng:Application.lng,
 			styles:Application.styles,
@@ -213,7 +248,7 @@
 		});
 		Map.initMap();
 		
-		//start up the google directions service and renderer
+		// Start up the google directions service and renderer
 		Application.directionsservice = new google.maps.DirectionsService();
 		Application.directionsrenderer = new google.maps.DirectionsRenderer(Application.directionsoptions);
 		
@@ -232,7 +267,7 @@
 			ScheduleFT.query = encodeURIComponent(Application.schoolschedulequery);
 			
 			// Construct the School Location URL
-			ScheduleFT.url = ['https://www.googleapis.com/fusiontables/v1/query'];
+			ScheduleFT.url = [Application.fturl];
 			ScheduleFT.url.push('?sql='+ScheduleFT.query);
 			ScheduleFT.url.push('&key='+Application.googlemapsapikey);
 			ScheduleFT.url.push('&callback=?');
@@ -262,7 +297,7 @@
 			SchoolFT.query = encodeURIComponent(Application.schoollocationquery);
 			
 			// Construct the School Location URL
-			SchoolFT.url = ['https://www.googleapis.com/fusiontables/v1/query'];
+			SchoolFT.url = [Application.fturl];
 			SchoolFT.url.push('?sql=' + SchoolFT.query);
 			SchoolFT.url.push('&key='+Application.googlemapsapikey);
 			SchoolFT.url.push('&callback=?');
@@ -430,11 +465,11 @@
 						var phone = String(Schools[i].data.phone).replace('/[^0-9]/','');
 						if(isPhone)
 						{
-							$('#sick-tel').html('<a href="tel:+1'+phone+'">'+phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'</a>');
+							$('#sick-tel').html('<a class="btn btn-mini btn-primary" style="margin-bottom:2px" href="tel:+1'+phone+'">Call: '+phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'</a>');
 						}
 						else
 						{
-							$('#sick-tel').text(phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4));
+							$('#sick-tel').text('Call: '+phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4));
 						}
 						$('#sick').show();
 					}
@@ -534,11 +569,13 @@
 			controlDiv.style.padding = '1em';
 			// Set CSS for the control border.
 			var controlUI = document.createElement('div');
-			controlUI.style.backgroundColor = 'white';
+			controlUI.style.backgroundColor = '#FFA500';
+			controlUI.style.color = 'black';
 			controlUI.style.borderStyle = 'solid';
-			controlUI.style.borderWidth = '2px';
+			controlUI.style.borderWidth = '1px';
 			controlUI.style.cursor = 'pointer';
 			controlUI.style.textAlign = 'center';
+			controlUI.style.borderRadius = '6px';
 			controlUI.title = 'Click to interact with the map.';
 			controlDiv.appendChild(controlUI);
 			// Set CSS for the control interior.
@@ -561,7 +598,6 @@
 					$('#before-map,#div-footer,#twitter').hide(750,function(){
 						$('#map-width').css('height','100%');
 						$('#map-ratio').css('margin-top', window.innerHeight);
-						$('#div-map').offset().top;
 						controlUI.title = 'Click to close up the map.';
 						controlText.innerHTML = 'Minimize';
 						Map.Map.setCenter(cntr);
@@ -639,7 +675,7 @@
 				{
 					Application.schoolselected = Schools[i];
 					var phone = String(Schools[i].data.phone).replace('/[^0-9]/','');
-					$('#sick-tel').text(phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4));
+					$('#sick-tel').text('Call: '+phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4));
 					$('#sick').show();
 					break;
 				}
@@ -656,7 +692,7 @@
 			else
 			{
 				$('#time-end-icon').text('');
-				$('#time-start-icon').html('<i class="icon-ok icon-white"></i> ');
+				$('#time-start-icon').html(Application.check);
 				var timestring = formattime(Application.schoolselected.data.start);
 				$('#time').timepicker('setTime', timestring);
 				$('#summary-time').text(timestring);
@@ -676,7 +712,7 @@
 			else
 			{
 				$('#time-start-icon').text('');
-				$('#time-end-icon').html('<i class="icon-ok icon-white"></i> ');
+				$('#time-end-icon').html(Application.check);
 				var timestring = formattime(Application.schoolselected.data.end);
 				$('#time').timepicker('setTime', timestring);
 				$('#summary-time').text(timestring);
@@ -698,8 +734,6 @@
 			$('#time-start,#time-end').removeClass('active');
 		});
 		
-		
-		
 		// travel change
 		$('.travel').on('click', function() {
 			if($.jStorage.storageAvailable())
@@ -709,19 +743,19 @@
 			if($(this).val() === 'WALKING')
 			{
 				$('#summary-travel').text('Walking');
-				$('#travel-walking-icon').html('<i class="icon-ok icon-white"></i> ');
+				$('#travel-walking-icon').html(Application.check);
 				$('#travel-transit-icon,#travel-driving-icon').text('');
 			}
 			else if($(this).val() === 'TRANSIT')
 			{
 				$('#summary-travel').text('CTA/Metra');
-				$('#travel-transit-icon').html('<i class="icon-ok icon-white"></i> ');
+				$('#travel-transit-icon').html(Application.check);
 				$('#travel-walking-icon,#travel-driving-icon').text('');
 			}
 			else if($(this).val() === 'DRIVING')
 			{
 				$('#summary-travel').text('Driving');
-				$('#travel-driving-icon').html('<i class="icon-ok icon-white"></i> ');
+				$('#travel-driving-icon').html(Application.check);
 				$('#travel-walking-icon,#travel-transit-icon').text('');
 			}
 		});
@@ -770,98 +804,66 @@
 			}
 		});
 		
-		// NEXT BUTTONS -----------------------------------------------------------
+		// NEXT AND BACK BUTTONS --------------------------------------------------
+		
+		/**
+		 * hide DOM IDs then show DOM IDs
+		 */
+		function hideshow(hide,show)
+		{
+			return function()
+			{
+				$('#grp-'+hide).hide();
+				$('#grp-'+show).show();
+				window.scrollTo(0, 1);
+			};
+		}
 		
 		// intro "start" button click
-		$('#intro-start').click(function(){
-			$('#grp-intro,#isschool').hide();
-			$('#grp-school').show();
-			window.scrollTo(0, 1);
-		});
+		$('#intro-start').click(hideshow('intro,#isschool','school'));
 		
 		// school "next" button click
-		$('#school-next').click(function(){
-			$('#grp-school').hide();
-			$('#grp-time').show();
-			window.scrollTo(0, 1);
-		});
+		$('#school-next').click(hideshow('school','time'));
 		
 		// time "next" button click
-		$('#time-next').click(function(){
-			$('#grp-time').hide();
-			$('#grp-travel').show();
-			window.scrollTo(0, 1);
-		});
+		$('#time-next').click(hideshow('time','travel'));
 		
 		// travel "next" button click
-		$('#travel-next').click(function(){
-			$('#grp-travel').hide();
-			$('#grp-mylocation').show();
-			window.scrollTo(0, 1);
-		});
+		$('#travel-next').click(hideshow('travel','mylocation'));
 		
 		// mylocation "next" button click
-		$('#mylocation-next').click(function(){
-			$('#grp-mylocation').hide();
-			$('#grp-summary,#isschool').show();
-			window.scrollTo(0, 1);
-		});
-		
-		// BACK BUTTONS -----------------------------------------------------------
+		$('#mylocation-next').click(hideshow('mylocation','summary,#isschool'));
 		
 		// time "back" button click
-		$('#time-back').click(function(){
-			$('#grp-time').hide();
-			$('#grp-school').show();
-			window.scrollTo(0, 1);
-		});
+		$('#time-back').click(hideshow('time','school'));
 		
 		// travel "back" button click
-		$('#travel-back').click(function(){
-			$('#grp-travel').hide();
-			$('#grp-time').show();
-			window.scrollTo(0, 1);
-		});
+		$('#travel-back').click(hideshow('travel','time'));
 		
 		// mylocation "back" button click
-		$('#mylocation-back').click(function(){
-			$('#grp-mylocation').hide();
-			$('#grp-travel').show();
-			window.scrollTo(0, 1);
-		});
+		$('#mylocation-back').click(hideshow('mylocation','travel'));
 		
 		// summary "back" button click
-		$('#summary-back').click(function(){
-			$('#grp-summary,#isschool').hide();
-			$('#grp-mylocation').show();
-			window.scrollTo(0, 1);
-		});
+		$('#summary-back').click(hideshow('summary,#isschool','mylocation'));
 		
 		// SUMMARY BUTTONS --------------------------------------------------------
 		
-		$('#summary-school-btn').click(function(){
-			$('#grp-summary,#isschool').hide();
-			$('#grp-school').show();
-			window.scrollTo(0, 1);
-		});
+		function summarybtn(grp)
+		{
+			return function(){
+				$('#grp-summary,#isschool').hide();
+				$('#grp-'+grp).show();
+				window.scrollTo(0, 1);
+			};
+		}
 		
-		$('#summary-time-btn').click(function(){
-			$('#grp-summary,#isschool').hide();
-			$('#grp-time').show();
-			window.scrollTo(0, 1);
-		});
+		$('#summary-school-btn').click(summarybtn('school'));
 		
-		$('#summary-travel-btn').click(function(){
-			$('#grp-summary,#isschool').hide();
-			$('#grp-travel').show();
-			window.scrollTo(0, 1);
-		});
+		$('#summary-time-btn').click(summarybtn('time'));
 		
-		$('#summary-mylocation-btn').click(function(){
-			$('#grp-summary,#isschool').hide();
-			$('#grp-mylocation').show();
-			window.scrollTo(0, 1);
-		});
+		$('#summary-travel-btn').click(summarybtn('travel'));
+		
+		$('#summary-mylocation-btn').click(summarybtn('mylocation'));
 	
 	});
 	
