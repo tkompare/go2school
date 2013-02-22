@@ -465,7 +465,7 @@
 						var phone = String(Schools[i].data.phone).replace('/[^0-9]/','');
 						if(isPhone)
 						{
-							$('#sick-tel').html('<a class="btn btn-mini btn-primary" style="margin-bottom:2px" href="tel:+1'+phone+'">Call: '+phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'</a>');
+							$('#sick-tel').html('<a class="btn btn-mini btn-warning" style="margin-bottom:2px" href="tel:+1'+phone+'">Call: '+phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'</a>');
 						}
 						else
 						{
@@ -569,10 +569,10 @@
 			controlDiv.style.padding = '1em';
 			// Set CSS for the control border.
 			var controlUI = document.createElement('div');
-			controlUI.style.backgroundColor = '#FFA500';
-			controlUI.style.color = 'black';
+			controlUI.style.backgroundColor = '#000080';
+			controlUI.style.color = 'white';
 			controlUI.style.borderStyle = 'solid';
-			controlUI.style.borderWidth = '1px';
+			controlUI.style.borderWidth = '0px';
 			controlUI.style.cursor = 'pointer';
 			controlUI.style.textAlign = 'center';
 			controlUI.style.borderRadius = '6px';
