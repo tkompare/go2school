@@ -46,8 +46,13 @@
 			<div id=grp-time class=margin2>
 				<h4 class=center>What time do you want to arrive?</h4>
 				<div class="padded margin2" data-toggle=buttons-radio>
-					<span class=span6><button id=time-start name=travel value=start class="btn btn-large btn-primary btn-block"><span id=time-start-icon></span>Start of school<span id=time-start-time></span></button></span>
-					<span class=span6><button id=time-end name=travel value=end class="btn btn-large btn-primary btn-block"><span id=time-end-icon></span>End of school<span id=time-end-time></span></button></span>
+					<span class=span6><button id=date-today name=date value=today class="btn btn-large btn-primary btn-block date"><span id=date-today-icon></span>Today</button></span>
+					<span class=span6><button id=date-tomorrow name=date value=tomorrow class="btn btn-large btn-primary btn-block date"><span id=date-tomorrow-icon></span>Tomorrow</button></span>
+					<br><br>
+				</div>
+				<div class="padded margin2" data-toggle=buttons-radio>
+					<span class=span6><button id=time-start name=time value=start class="btn btn-large btn-warning btn-block"><span id=time-start-icon></span>Start of school<span id=time-start-time></span></button></span>
+					<span class=span6><button id=time-end name=time value=end class="btn btn-large btn-warning btn-block"><span id=time-end-icon></span>End of school<span id=time-end-time></span></button></span>
 					<br><br>
 				</div>
 				<div class="center padded margin2">
@@ -87,16 +92,16 @@
 					<small>4/4</small>
 				</div>
 			</div>
-			<div id="grp-summary">
+			<div id="grp-summary" class="control-group center padded margin2">
 				<div class="span6 offset3 margin2">
 				<table class="table">
 					<tr><td><b>Name of School:</b></td><td><span id=summary-school></span><button id=summary-school-btn class="btn btn-mini pull-right" type="button">Edit</button></td></tr>
-					<tr><td><b>Time to Arrive:</b></td><td><span id=summary-time></span><button id=summary-time-btn class="btn btn-mini pull-right" type="button">Edit</button></td></tr>
+					<tr><td><b>Time to Arrive:</b></td><td><span id=summary-time></span> - <span id=summary-date></span><button id=summary-time-btn class="btn btn-mini pull-right" type="button">Edit</button></td></tr>
 					<tr><td><b>Travel Mode:</b></td><td><span id=summary-travel></span><button id=summary-travel-btn class="btn btn-mini pull-right" type="button">Edit</button></td></tr>
 					<tr><td><b>Leaving From:</b></td><td><span id=summary-mylocation></span><button id=summary-mylocation-btn class="btn btn-mini pull-right" type="button">Edit</button></td></tr>
 				</table>
 				</div>
-				<div class="span12 center margin2">
+				<div class="span10 offset1">
 					<button id=summary-back class="btn btn-large btn-primary">Back</button>
 					<button id=summary-next class="btn btn-large btn-warning">Go!</button><br>
 				</div>

@@ -168,7 +168,7 @@
 	
 	/**
 	 * Fusion Table connection
-	 * @type object
+	 * @type class
 	 */
 	var FusionTable = (function(){
 		var constructor = function()
@@ -183,6 +183,7 @@
 	$(function(){
 		
 		// See if local storage has any values to fill in the form with
+		var storageDate = '';
 		var storageTravel = '';
 		if($.jStorage.storageAvailable())
 		{
@@ -192,6 +193,19 @@
 			$('#summary-time').text($.jStorage.get('time',''));
 			$('#mylocation').val($.jStorage.get('mylocation',''));
 			$('#summary-mylocation').text($.jStorage.get('mylocation',''));
+			storageDate = $.jStorage.get('date','');
+			if(storageDate === 'today')
+			{
+				$('#date-today').addClass('active');
+				$('#summary-date').text('Today');
+				$('#date-today-icon').html(Application.check);
+			}
+			if(storageDate === 'tomorrow')
+			{
+				$('#date-tomorrow').addClass('active');
+				$('#summary-date').text('Tomorrow');
+				$('#date-tomorrow-icon').html(Application.check);
+			}
 			storageTravel = $.jStorage.get('travel','');
 			if(storageTravel === 'WALKING')
 			{
@@ -335,12 +349,6 @@
 					var colname = columns[j];
 					Schools[i].data[colname] = rows[i][j];
 				}
-				// Set the selected school, if there is one
-				if($('#school').val() !== '' && Schools[i].data.longname === $('#school').val())
-				{
-					Application.schoolselected = Schools[i];
-				}
-				
 				// Push to the location names array the name of the schools
 				// for the form input typeahead function
 				schoolnames.push(Schools[i].data.longname);
@@ -379,6 +387,23 @@
 				};
 				// Make the info box
 				Schools[i].infobox = new InfoBox(options);
+				// Set the selected school, if the school name entered matchs the longname
+				if($('#school').val() !== '' && Schools[i].data.longname === $('#school').val())
+				{
+					Application.schoolselected = Schools[i];
+				}
+			}
+			if(Application.schoolselected === null)
+			{
+				var regex = new RegExp($('#school').val(),'gi');
+				for(var i in Schools)
+				{
+					if(Schools[i].data.longname.match(regex))
+					{
+						Application.schoolselected = Schools[i];
+						break;
+					}
+				}
 			}
 			// Try to center on school in school input
 			centeronschool();
@@ -469,7 +494,7 @@
 						}
 						else
 						{
-							$('#sick-tel').text('Call: '+phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4));
+							$('#sick-tel').html('<b>Call: '+phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'</b>');
 						}
 						$('#sick').show();
 					}
@@ -651,9 +676,9 @@
 		// LISTENERS -------------------------------------------------------------/
 		
 		// school input onblur
-		$('#school').blur(function(){
-			centeronschool();
-		});
+		//$('#school').blur(function(){
+		//	centeronschool();
+		//});
 		
 		// find me button click
 		$('#mylocation-gps').click(function(){
@@ -664,11 +689,8 @@
 		
 		// school input change
 		$('#school').change(function(){
-			if($.jStorage.storageAvailable())
-			{
-				$.jStorage.set('school', $('#school').val());
-			}
 			$('#summary-school').text($('#school').val());
+			Application.schoolselected = null;
 			for(var i in Schools)
 			{
 				if(Schools[i].data.longname === $('#school').val())
@@ -680,7 +702,66 @@
 					break;
 				}
 			}
+			// begins with
+			if(Application.schoolselected === null)
+			{
+				var regex = new RegExp('^'+$('#school').val(),'i');
+				setSchool(Schools,regex);
+			}
+			// case sensitive
+			if(Application.schoolselected === null)
+			{
+				var regex = new RegExp($('#school').val(),'g');
+				setSchool(Schools,regex);
+			}
+			// case insensitive
+			if(Application.schoolselected === null)
+			{
+				var regex = new RegExp($('#school').val(),'gi');
+				setSchool(Schools,regex);
+			}
 			centeronschool();
+		});
+		
+		function setSchool(Schools,regex)
+		{
+			for(var i in Schools)
+			{
+				if(Schools[i].data.longname.match(regex))
+				{
+					Application.schoolselected = Schools[i];
+					$('#summary-school').text(Schools[i].data.longname);
+					$('#school').val(Schools[i].data.longname);
+					var phone = String(Schools[i].data.phone).replace('/[^0-9]/','');
+					$('#sick-tel').text('Call: '+phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4));
+					$('#sick').show();
+					if($.jStorage.storageAvailable())
+					{
+						$.jStorage.set('school', $('#school').val());
+					}
+					break;
+				}
+			}
+		}
+		
+		// Today Button Listener
+		$('.date').on('click', function() {
+			if($.jStorage.storageAvailable())
+			{
+				$.jStorage.set('date', $(this).val());
+			}
+			if($(this).val() === 'today')
+			{
+				$('#summary-date').text('Today');
+				$('#date-today-icon').html(Application.check);
+				$('#date-tomorrow-icon').text('');
+			}
+			else if($(this).val() === 'tomorrow')
+			{
+				$('#summary-date').text('Tomorrow');
+				$('#date-tomorrow-icon').html(Application.check);
+				$('#date-today-icon').text('');
+			}
 		});
 		
 		// School Start button listener
@@ -703,7 +784,7 @@
 			}
 		});
 		
-		// School Start button listener
+		// School End button listener
 		$('#time-end').click(function(){
 			if(Application.schoolselected.data.end === '')
 			{
