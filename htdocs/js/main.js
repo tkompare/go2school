@@ -235,7 +235,7 @@
 		}
 		
 		// If the form is completely filled out, go straight to the summary view
-		if($('#school').val() !== '' && $('#time').val() !== '' && $('#mylocation').val() !== '' && storageTravel !== '')
+		if($('#school').val() !== '' && $('#time').val() !== '' && storageDate !== '' && $('#mylocation').val() !== '' && storageTravel !== '')
 		{
 			$('#grp-intro,#grp-school,#grp-travel,#grp-time,#grp-mylocation').hide();
 		}
@@ -243,6 +243,28 @@
 		{
 			$('#grp-school,#grp-travel,#grp-time,#grp-mylocation,#grp-summary,#sick').hide();
 		}
+		// Disable next buttons when form fields are empty
+		if($('#school').val() === '')
+		{
+			$('#school-next').addClass('disabled');
+			$('#school-next').attr('disabled','disabled');
+		}
+		if(storageDate === '' || $('#time').val() === '')
+		{
+			$('#time-next').addClass('disabled');
+			$('#time-next').attr('disabled','disabled');
+		}
+		if(storageTravel === '')
+		{
+			$('#travel-next').addClass('disabled');
+			$('#travel-next').attr('disabled','disabled');
+		}
+		if($('#mylocation').val() === '')
+		{
+			$('#mylocation-next').addClass('disabled');
+			$('#mylocation-next').attr('disabled','disabled');
+		}
+		
 		// Set up the loading message
 		$('#loading').hide();
 		$(document).ajaxStart(function() {
@@ -520,6 +542,22 @@
 				alert('We\'re sorry! Your browser does not support geolocation.');
 			}
 		}
+		// Check mylocation for enabling next button
+		function checkMyLocation()
+		{
+			if($('#mylocation').val().length > 0)
+			{
+				$('#mylocation-next').removeClass('disabled').removeAttr('disabled');
+			}
+			else
+			{
+				if($('#mylocation-next').hasClass('disabled') === false)
+				{
+					$('#mylocation-next').addClass('disabled');
+				}
+				$('#mylocation-next').attr('disabled','disabled');
+			}
+		}
 		
 		// Get address from GPS
 		function mylocationgps()
@@ -558,6 +596,7 @@
 										{
 											$.jStorage.set('mylocation', formattedAddress[0]);
 										}
+										checkMyLocation();
 									}
 									else
 									{
@@ -720,6 +759,10 @@
 				var regex = new RegExp($('#school').val(),'gi');
 				setSchool(Schools,regex);
 			}
+			if($('#school').val().length > 0)
+			{
+				$('#school-next').removeClass('disabled').removeAttr('disabled');
+			}
 			centeronschool();
 		});
 		
@@ -744,6 +787,14 @@
 			}
 		}
 		
+		// date-time screen function
+		function dateTimeNext() {
+			if($('#summary-date').text().length > 0 && $('#time').val() !== '')
+			{
+				$('#time-next').removeClass('disabled').removeAttr('disabled');
+			}
+		}
+		
 		// Today Button Listener
 		$('.date').on('click', function() {
 			if($.jStorage.storageAvailable())
@@ -762,6 +813,7 @@
 				$('#date-tomorrow-icon').html(Application.check);
 				$('#date-today-icon').text('');
 			}
+			dateTimeNext();
 		});
 		
 		// School Start button listener
@@ -782,6 +834,7 @@
 					$.jStorage.set('time', timestring);
 				}
 			}
+			dateTimeNext();
 		});
 		
 		// School End button listener
@@ -802,6 +855,7 @@
 					$.jStorage.set('time', timestring);
 				}
 			}
+			dateTimeNext();
 		});
 		
 		// time change
@@ -813,6 +867,7 @@
 			$('#summary-time').text($('#time').val());
 			$('#time-start-icon,#time-end-icon').text('');
 			$('#time-start,#time-end').removeClass('active');
+			dateTimeNext();
 		});
 		
 		// travel change
@@ -839,6 +894,7 @@
 				$('#travel-driving-icon').html(Application.check);
 				$('#travel-walking-icon,#travel-transit-icon').text('');
 			}
+			$('#travel-next').removeClass('disabled').removeAttr('disabled');
 		});
 		
 		// mylocation input change
@@ -867,8 +923,8 @@
 							if (results[0])
 							{
 								MyLocation.LatLng = results[0].geometry.location;
-								MyLocation.lat = MyLocation.latlng.lat();
-								MyLocation.lng = MyLocation.latlng.lng();
+								MyLocation.lat = MyLocation.LatLng.lat();
+								MyLocation.lng = MyLocation.LatLng.lng();
 								MyLocation.address = $('#mylocation').val();
 							}
 							else
@@ -883,6 +939,7 @@
 					}
 				);
 			}
+			checkMyLocation();
 		});
 		
 		// NEXT AND BACK BUTTONS --------------------------------------------------
@@ -924,11 +981,7 @@
 		// mylocation "back" button click
 		$('#mylocation-back').click(hideshow('mylocation','travel'));
 		
-		// summary "back" button click
-		$('#summary-back').click(hideshow('summary,#isschool','mylocation'));
-		
 		// SUMMARY BUTTONS --------------------------------------------------------
-		
 		function summarybtn(grp)
 		{
 			return function(){
