@@ -360,6 +360,104 @@
 		
 		// FUNCTIONS -------------------------------------------------------------/
 		
+		// Format time string for text output
+		function formattime(time)
+		{
+			var meridian = 'AM';
+			var timearray = time.split(':');
+			var hour = timearray[0].length === 1 ? '0' + timearray[0] : timearray[0];
+			if(hour === 12)
+			{
+				meridian = 'PM';
+			}
+			if(hour > 12)
+			{
+				hour = hour - 12;
+				meridian = 'PM';
+			}
+			var minute = timearray[1];
+			var timestring = hour+':'+minute+' '+meridian;
+			return timestring;
+		}
+		
+		// Center the map on the school in the school name input
+		function centeronschool() {
+			if($('#school').val() !== '')
+			{
+				for(var i in Schools)
+				{
+					if(Schools[i].data.longname === Application.schoolselected.data.longname)
+					{
+						//$('#time-start-icon,#time-end-icon').text('');
+						Map.Map.setCenter(Schools[i].latlng);
+						Schools[i].infobox.open(Map.Map,Schools[i].marker);
+						var startTime = formattime(Application.schoolselected.data.start);
+						var endTime = formattime(Application.schoolselected.data.end);
+						// Set button time span text
+						$('#time-start-time').text(' - '+startTime);
+						$('#time-end-time').text(' - '+endTime);
+						// If start of end time button was previously selected, assume the
+						// user still wants to go to the new school at the start or end
+						// time of the newly selected school.
+						if($('#time-start').hasClass('active'))
+						{
+							$('#time,#summary-time').val(startTime);
+							if($.jStorage.storageAvailable())
+							{
+								$.jStorage.set('time',startTime);
+							}
+						}
+						else if($('#time-end').hasClass('active'))
+						{
+							$('#time,#summary-time').val(endTime); 
+							if($.jStorage.storageAvailable())
+							{
+								$.jStorage.set('time',endTime);
+							}
+						}
+						// Check and uncheck in case old manually set time or current
+						// (default) time happens to be the time of the start or end 
+						// time button.
+						if(startTime === $('#time').val())
+						{
+							$('#time-end-icon').text('');
+							$('#time-end').removeClass('active');
+							$('#time-start-icon').html(Application.check);
+							$('#time-start').addClass('active');
+						}
+						else if(endTime === $('#time').val())
+						{
+							$('#time-start-icon').text('');
+							$('#time-start').removeClass('active');
+							$('#time-end-icon').html(Application.check);
+							$('#time-end').addClass('active');
+						}
+						else
+						{
+							$('#time-start-icon').text('');
+							$('#time-start').removeClass('active');
+							$('#time-end-icon').text('');
+							$('#time-end').removeClass('active');
+						}
+						var phone = String(Schools[i].data.phone).replace('/[^0-9]/','');
+						if(isPhone)
+						{
+							$('#sick-tel').html('<a class="btn btn-mini btn-warning" style="margin-bottom:2px" href="tel:+1'+phone+'">Call: '+phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'</a>');
+						}
+						else
+						{
+							$('#sick-tel').html('<b>Call: '+phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'</b>');
+						}
+						$('#sick').show();
+					}
+					else
+					{
+						Schools[i].infobox.close(Map.Map,Schools[i].marker);
+					}
+				}
+			}
+		}
+		
 		function getSchools(columns,rows)
 		{
 			// Copy the School Location data to the School object
@@ -493,38 +591,6 @@
 			{
 				$('#schedule-tomorrow').html(Application.schooltomorrow+' Tomorrow');
 				$('#schedule-tomorrow').addClass('text-error');
-			}
-		}
-		
-		// Center the map on the school in the school name input
-		function centeronschool() {
-			if($('#school').val() !== '')
-			{
-				for(var i in Schools)
-				{
-					if(Schools[i].data.longname === Application.schoolselected.data.longname)
-					{
-						$('#time-start-icon,#time-end-icon').text('');
-						Map.Map.setCenter(Schools[i].latlng);
-						Schools[i].infobox.open(Map.Map,Schools[i].marker);
-						$('#time-start-time').text(' - '+formattime(Application.schoolselected.data.start));
-						$('#time-end-time').text(' - '+formattime(Application.schoolselected.data.end));
-						var phone = String(Schools[i].data.phone).replace('/[^0-9]/','');
-						if(isPhone)
-						{
-							$('#sick-tel').html('<a class="btn btn-mini btn-warning" style="margin-bottom:2px" href="tel:+1'+phone+'">Call: '+phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'</a>');
-						}
-						else
-						{
-							$('#sick-tel').html('<b>Call: '+phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'</b>');
-						}
-						$('#sick').show();
-					}
-					else
-					{
-						Schools[i].infobox.close(Map.Map,Schools[i].marker);
-					}
-				}
 			}
 		}
 		
@@ -694,30 +760,27 @@
 			});
 		}
 		
-		function formattime(time)
+		function setSchool(Schools,regex)
 		{
-			var meridian = 'AM';
-			var timearray = time.split(':');
-			var hour = timearray[0].length === 1 ? '0' + timearray[0] : timearray[0];
-			if(hour === 12)
+			for(var i in Schools)
 			{
-				meridian = 'PM';
+				if(Schools[i].data.longname.match(regex))
+				{
+					Application.schoolselected = Schools[i];
+					$('#summary-school').text(Schools[i].data.longname);
+					$('#school').val(Schools[i].data.longname);
+					var phone = String(Schools[i].data.phone).replace('/[^0-9]/','');
+					$('#sick-tel').text('Call: '+phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4));
+					$('#sick').show();
+					if($.jStorage.storageAvailable())
+					{
+						$.jStorage.set('school', $('#school').val());
+					}
+					break;
+				}
 			}
-			if(hour > 12)
-			{
-				hour = hour - 12;
-				meridian = 'PM';
-			}
-			var minute = timearray[1];
-			var timestring = hour+':'+minute+' '+meridian;
-			return timestring;
 		}
-		// LISTENERS -------------------------------------------------------------/
-		
-		// school input onblur
-		//$('#school').blur(function(){
-		//	centeronschool();
-		//});
+		// LISTENERS --------------------------------------------------------------
 		
 		// find me button click
 		$('#mylocation-gps').click(function(){
@@ -729,6 +792,10 @@
 		// school input change
 		$('#school').change(function(){
 			$('#summary-school').text($('#school').val());
+			if($.jStorage.storageAvailable())
+			{
+				$.jStorage.set('school',$('#school').val());
+			}
 			Application.schoolselected = null;
 			for(var i in Schools)
 			{
@@ -765,27 +832,6 @@
 			}
 			centeronschool();
 		});
-		
-		function setSchool(Schools,regex)
-		{
-			for(var i in Schools)
-			{
-				if(Schools[i].data.longname.match(regex))
-				{
-					Application.schoolselected = Schools[i];
-					$('#summary-school').text(Schools[i].data.longname);
-					$('#school').val(Schools[i].data.longname);
-					var phone = String(Schools[i].data.phone).replace('/[^0-9]/','');
-					$('#sick-tel').text('Call: '+phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4));
-					$('#sick').show();
-					if($.jStorage.storageAvailable())
-					{
-						$.jStorage.set('school', $('#school').val());
-					}
-					break;
-				}
-			}
-		}
 		
 		// date-time screen function
 		function dateTimeNext() {
