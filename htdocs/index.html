@@ -18,6 +18,10 @@
 	.padded{padding-left:10px;padding-right:10px}
 	.center{text-align:center}
 	.margin2{margin-bottom:2em;margin-top:2em}
+	.adp-directions{width:100%}
+	@media only screen and (min-width:768px) {
+		#directions,#summary-go { position:relative;left:-2em; }
+	}
 </style>
 <title>GoToSchool</title>
 </head>
@@ -94,7 +98,7 @@
 				</div>
 			</div>
 			<div id="grp-summary" class="control-group center padded margin2">
-				<div class="span6 offset3 margin2">
+				<div class="span8 offset2 margin2">
 				<table class="table">
 					<tr><td><b>Name of School:</b></td><td><span id=summary-school></span><button id=summary-school-btn class="btn btn-mini pull-right" type="button">Edit</button></td></tr>
 					<tr><td><b>Time to Arrive:</b></td><td><span id=summary-time></span> - <span id=summary-date></span><button id=summary-time-btn class="btn btn-mini pull-right" type="button">Edit</button></td></tr>
@@ -102,12 +106,17 @@
 					<tr><td><b>Leaving From:</b></td><td><span id=summary-mylocation></span><button id=summary-mylocation-btn class="btn btn-mini pull-right" type="button">Edit</button></td></tr>
 				</table>
 				</div>
-				<div class="span9 offset1">
+				<div class="span2 offset5">
 					<button id=summary-go class="btn btn-large btn-warning">Go!</button><br>
 				</div>
 			</div>
 		</div>
-		<div id=grp-directions class="span8 offset2 margin2"></div>
+		<div id=grp-directions class="control-group center padded margin2">
+			<div class=span12>
+				<div id=timetoleave class="span12 center margin2"></div>
+				<div id=directions class="span8 offset2"></div>
+			</div>
+		</div>
 	</div>
 	<div id=twitter class=padded>
 		<a href="https://twitter.com/share" class="twitter-share-button" data-text="Find your way to a @ChiPubSchools school." data-url="http://go2school.smartchicagoapps.org" data-related="tomkompare:Author of GoToSchool,chipubschools:Offical Account of CPS,opengovchicago:A meetup group for government and community members" data-lang="en" data-size="small" data-count="none">Tweet</a>
@@ -124,9 +133,9 @@
 		</div>
 	</div>
 	<div id=div-footer class=row-fluid>
-		<footer class=padded style="background-color:#ddd;overflow:hidden">
+		<footer class=padded style="background-color:#333;color:white;overflow:hidden">
 			<div class="span4 margin2">
-				<p><a href="http://www.cps.edu">Chicago Public Schools</a></p>
+				<p><a href="http://www.cps.edu" style="color:orange">Chicago Public Schools</a></p>
 				<p>773-553-1000</p>
 			</div>
 			<div class="span8 margin2">
@@ -134,10 +143,10 @@
 					the Chicago Public Schools (CPS) and CPS makes no representations as to the 
 					accuracy of the information provided by this map application. 
 					Built by
-					<a href="http://linkedin.com/in/thomaskompare">Tom Kompare</a>, 
-					in collaboration with <a href="http://www.meetup.com/OpenGovChicago/"> 
+					<a href="http://linkedin.com/in/thomaskompare" style="color:orange">Tom Kompare</a>, 
+					in collaboration with <a href="http://www.meetup.com/OpenGovChicago/" style="color:orange"> 
 					Open Gov Chicago</a>. Hosted by the 
-					<a href="http://www.smartchicagocollaborative.org/"> Smart Chicago 
+					<a href="http://www.smartchicagocollaborative.org/" style="color:orange"> Smart Chicago 
 					Collaborative</a>.
 				</small></p>
 			</div>
@@ -152,7 +161,7 @@
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
 	<script>window.jQuery || document.write('<script src="js/jquery-1.9.0.min.js"><\/script>')</script>
 	<script src="//maps.googleapis.com/maps/api/js?key=AIzaSyDH5WuL3gKYVBWVqLr6g3PQffdZE-XhBUw&sensor=true" type="text/javascript"></script>
-	<!-- These eight .js files rolled into 'main.min.js' -->
+	<!-- These nine .js files rolled into 'main.min.js' -->
 		<script src="js/bootstrap.js"></script>
 		<script src="js/jquery.json-2.4.js"></script>
 		<script src="js/bootstrap-timepicker.js"></script>

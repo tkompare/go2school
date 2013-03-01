@@ -609,7 +609,7 @@
 				{
 					Application.Map.setPanZoom(true);
 					Application.Map.setTouchScroll(false);
-					$('#before-map,#div-footer,#twitter').hide(750,function(){
+					$('#before-map,#div-footer,#twitter,#grp-directions').hide(750,function(){
 						$('#map-width').css('height','100%');
 						$('#map-ratio').css('margin-top', window.innerHeight);
 						controlUI.title = 'Click to close up the map.';
@@ -626,7 +626,7 @@
 				{
 					Application.Map.setPanZoom(false);
 					Application.Map.setTouchScroll(true);
-					$('#before-map,#div-footer,#twitter').show(750,function(){
+					$('#before-map,#div-footer,#twitter,#grp-directions').show(750,function(){
 						$('#map-width').css('height','');
 						$('#map-ratio').css('margin-top','200px');
 						controlUI.title = 'Click to interact with the map.';
@@ -667,6 +667,10 @@
 		function route()
 		{
 			// Start up the google directions service and renderer
+			if(Application.DirectionsRenderer !== null)
+			{
+				Application.DirectionsRenderer.setMap(null);
+			}
 			Application.DirectionsService = new google.maps.DirectionsService();
 			Application.DirectionsRenderer = new google.maps.DirectionsRenderer(Default.DirectionsOptions);
 			
@@ -691,11 +695,12 @@
 				unixtime = Date.parse(Application.tomorrow+' '+userTime).getTime();
 			}
 			var transitOptions = {
-				arrivalTime : new Date(unixtime)
+				// subtract 10 minutes so the user has a bit of a real-life buffer.
+				arrivalTime : new Date(unixtime - 600000)
 			};
 			Application.DirectionsRenderer.setMap(Application.Map.Map);
-			$('#directions').html('');
-			Application.DirectionsRenderer.setPanel(document.getElementById('grp-directions'));
+			//$('#grp-directions').html('');
+			Application.DirectionsRenderer.setPanel(document.getElementById('directions'));
 			var RouteRequest = null;
 			if(Application.travelmode === 'TRANSIT')
 			{
@@ -728,33 +733,53 @@
 				{
 					if (Status == google.maps.DirectionsStatus.OK)
 					{
-						//$('#theform').hide(750);
-						$('#grp-directions').html('');
+						$('#directions').html('');
+						$('#timetoleave').html('');
 						$('#grp-directions').show();
-						//var transitroute = 0;
+						var route = 0;
 						for(var i=0; i<Response.routes.length; i++)
 						{
 							for(var j=0; j<Response.routes[i].legs[0].steps.length; j++)
 							{
 								if(Response.routes[i].legs[0].steps[j].travel_mode == Application.travelmode)
 								{
-									transitroute = i;
+									route = i;
 									break;
 								}
 							}
 							delete Response.routes[i].warnings;
 							Response.routes[i].copyrights = '';
 						}
-						//$('#timetoleave').html();
 						Application.DirectionsRenderer.setDirections(Response);
-//						if(buttonClicked == 'ctarouteevent')
-//						{
-//							$('#timetoleave').html('<b>Directions</b><br>Leave by '+Response.routes[transitroute].legs[0].departure_time.text+' on '+lastFluShotLocationClicked.Date.value+'</p>');
-//						}
-//						else
-//						{
-//							$('#timetoleave').html('<b>Directions</b><br>Leave by '+Response.routes[transitroute].legs[0].departure_time.text+'</p>');
-//						}
+						if(Application.travelmode == 'TRANSIT')
+						{
+							$('#timetoleave').html('<h4>Leave '+$('#summary-date').text()+' by '+Response.routes[route].legs[0].departure_time.text+'</h4>');
+						}
+						else
+						{
+							var milleseconds = Response.routes[route].legs[0].duration.text.match(/^[0-9]+/) * 60000;
+							// Subtract 10 minutes so no one is late.
+							var unixtimeLeaveBy = unixtime - milleseconds  - 600000;
+							var LeaveByDate = new Date(unixtimeLeaveBy);
+							var ampm = 'AM';
+							var hour = LeaveByDate.getHours();
+							if (hour > 12)
+							{
+								hour = hour - 12;
+								ampm = 'PM';
+							}
+							else if(hour < 1)
+							{
+								hour = 12;
+							}
+							else
+							{
+								ampm = 'PM';
+							}
+							var minute = LeaveByDate.getMinutes();
+							var leaveByDateString = hour+':'+minute+' '+ampm;
+							$('#timetoleave').html('<h4>Leave '+$('#summary-date').text()+' by '+leaveByDateString+'</h4>');
+						}
 					}
 					else
 					{
@@ -1204,7 +1229,7 @@
 			return function(){
 				$('#grp-summary,#isschool').hide();
 				$('#grp-'+grp).show();
-				$('#grp-directions').html('');
+				$('#directions,#timetoleave').html('');
 				window.scrollTo(0, 1);
 			};
 		}
