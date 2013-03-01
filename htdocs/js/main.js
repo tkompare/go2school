@@ -43,6 +43,8 @@
 		schoollocationquery:'SELECT lat, lng, longname, address, postalcode, phone, start, end FROM 1qCOcgrhGwjt6bdx_UVPSkyIMMVD-1C7CJFvpIjI',
 		// DOM ID target for the spinner
 		spinnerTarget:document.getElementById('before-map'),
+		// Local Storage prefix
+		storagePrefix:'gro.sppaogacihc.loohcs2og-',
 		// Bootstrap timepicker options
 		TimepickerOptions:{
 			minuteStep:5,
@@ -100,16 +102,23 @@
 		// School data rows
 		schooldatarows:null,
 		// The school currently selected
-		SchoolSelected:null
+		SchoolSelected:null,
+		// Today's Date mm/dd/yyyy
+		today:null,
+		// Tomorrow's Date
+		tomorrow:null,
+		// travel mode
+		travelmode:null
 	};
 	
 	/**
-	 * DOes thos browser do local storage?
+	 * Does this browser do local storage?
+	 * @type boolean
 	 */
 	var localStorage = $.jStorage.storageAvailable();
 	
 	/**
-	 *  Oh dear lord, browser detection!
+	 *  Oh dear lord, browser detection. -10 Charisma
 	 *  Is the browser android or iphone?
 	 *  @type boolean
 	 */
@@ -274,7 +283,7 @@
 							$('#time,#summary-time').val(startTime);
 							if(localStorage)
 							{
-								$.jStorage.set('time',startTime);
+								$.jStorage.set(Default.storagePrefix+'time',startTime);
 							}
 						}
 						else if($('#time-end').hasClass('active'))
@@ -282,7 +291,7 @@
 							$('#time,#summary-time').val(endTime);
 							if(localStorage)
 							{
-								$.jStorage.set('time',endTime);
+								$.jStorage.set(Default.storagePrefix+'time',endTime);
 							}
 						}
 						// Check and uncheck in case old manually set time or current
@@ -418,16 +427,16 @@
 				}
 			}
 			
-			var today = Today.month+'/'+Today.date+'/'+Today.year;
-			var tomorrow = Tomorrow.month+'/'+Tomorrow.date+'/'+Tomorrow.year;
+			Application.today = Today.month+'/'+Today.date+'/'+Today.year;
+			Application.tomorrow = Tomorrow.month+'/'+Tomorrow.date+'/'+Tomorrow.year;
 			
 			for(var i in Schedules)
 			{
-				if(Schedules[i].data.date === today)
+				if(Schedules[i].data.date === Application.today)
 				{
 					Default.schooltoday = Schedules[i].data.unifiedcalendar;
 				}
-				if(Schedules[i].data.date === tomorrow)
+				if(Schedules[i].data.date === Application.tomorrow)
 				{
 					Default.schooltomorrow = Schedules[i].data.unifiedcalendar;
 				}
@@ -529,10 +538,11 @@
 										var formattedAddress = results[0].formatted_address.split(',');
 										Application.MyLocation.address = formattedAddress[0];
 										$('#mylocation').val(formattedAddress[0]);
+										$('#mylocation').blur();
 										$('#summary-mylocation').text(formattedAddress[0]);
 										if(localStorage)
 										{
-											$.jStorage.set('mylocation', formattedAddress[0]);
+											$.jStorage.set(Default.storagePrefix+'mylocation', formattedAddress[0]);
 										}
 										checkMyLocation();
 									}
@@ -647,11 +657,117 @@
 					$('#sick').show();
 					if(localStorage)
 					{
-						$.jStorage.set('school', $('#school').val());
+						$.jStorage.set(Default.storagePrefix+'school', $('#school').val());
 					}
 					break;
 				}
 			}
+		}
+		
+		function route()
+		{
+			// Start up the google directions service and renderer
+			Application.DirectionsService = new google.maps.DirectionsService();
+			Application.DirectionsRenderer = new google.maps.DirectionsRenderer(Default.DirectionsOptions);
+			
+			var userTime = $('#time').val().replace(/\s/g,'');
+			// Google directions service doesn't seem to like midnight or noon with
+			// an AM/PM attached.
+			if(userTime === '12:00AM')
+			{
+				userTime = '00:00';
+			}
+			else if(userTime === '12:00PM')
+			{
+				userTime = '12:00';
+			}
+			var unixtime = null;
+			if($('#summary-date').text() === 'Today')
+			{
+				unixtime = Date.parse(Application.today+' '+userTime).getTime();
+			}
+			else if($('#summary-date').text() === 'Tomorrow')
+			{
+				unixtime = Date.parse(Application.tomorrow+' '+userTime).getTime();
+			}
+			var transitOptions = {
+				arrivalTime : new Date(unixtime)
+			};
+			Application.DirectionsRenderer.setMap(Application.Map.Map);
+			$('#directions').html('');
+			Application.DirectionsRenderer.setPanel(document.getElementById('grp-directions'));
+			var RouteRequest = null;
+			if(Application.travelmode === 'TRANSIT')
+			{
+				RouteRequest = {
+					origin : $('#mylocation').val()+', ' + Default.city + ', ' + Default.state,
+					destination : Application.SchoolSelected.data.address+', '+Default.city+', '+Default.state+' '+Application.SchoolSelected.data.postalcode,
+					transitOptions : transitOptions,
+					travelMode: google.maps.TravelMode.TRANSIT
+				};
+			}
+			else if(Application.travelmode === 'WALKING')
+			{
+				RouteRequest = {
+					origin : $('#mylocation').val()+', ' + Default.city + ', ' + Default.state,
+					destination : Application.SchoolSelected.data.address+', '+Default.city+', '+Default.state+' '+Application.SchoolSelected.data.postalcode,
+					transitOptions : transitOptions,
+					travelMode: google.maps.TravelMode.WALKING
+				};
+			}
+			else
+			{
+				RouteRequest = {
+					origin : $('#mylocation').val()+', ' + Default.city + ', ' + Default.state,
+					destination : Application.SchoolSelected.data.address+', '+Default.city+', '+Default.state+' '+Application.SchoolSelected.data.postalcode,
+					transitOptions : transitOptions,
+					travelMode: google.maps.TravelMode.DRIVING
+				};
+			}
+			Application.DirectionsService.route(RouteRequest, function(Response, Status)
+				{
+					if (Status == google.maps.DirectionsStatus.OK)
+					{
+						//$('#theform').hide(750);
+						$('#grp-directions').html('');
+						$('#grp-directions').show();
+						//var transitroute = 0;
+						for(var i=0; i<Response.routes.length; i++)
+						{
+							for(var j=0; j<Response.routes[i].legs[0].steps.length; j++)
+							{
+								if(Response.routes[i].legs[0].steps[j].travel_mode == Application.travelmode)
+								{
+									transitroute = i;
+									break;
+								}
+							}
+							delete Response.routes[i].warnings;
+							Response.routes[i].copyrights = '';
+						}
+						//$('#timetoleave').html();
+						Application.DirectionsRenderer.setDirections(Response);
+//						if(buttonClicked == 'ctarouteevent')
+//						{
+//							$('#timetoleave').html('<b>Directions</b><br>Leave by '+Response.routes[transitroute].legs[0].departure_time.text+' on '+lastFluShotLocationClicked.Date.value+'</p>');
+//						}
+//						else
+//						{
+//							$('#timetoleave').html('<b>Directions</b><br>Leave by '+Response.routes[transitroute].legs[0].departure_time.text+'</p>');
+//						}
+					}
+					else
+					{
+						if(typeof Application.DirectionsRenderer !== 'undefined')
+						{
+							Application.DirectionsRenderer.setMap(null);
+						}
+//						$('#theform').hide(750);
+//						$('#span-cta').show(750);
+//						$('#timetoleave').html('<p class="lead">Directions</p>');
+						$('#directions').html('<p><b>We are sorry. We cannot route you to this school.</b> It is likely that your local transit authority has not released schedule times. Please check back soon.</p>');
+					}
+				});
 		}
 		
 		// SET_UP AND START UP -----------------------------------------------------
@@ -661,13 +777,20 @@
 		var storageTravel = '';
 		if(localStorage)
 		{
-			$('#school').val($.jStorage.get('school',''));
-			$('#summary-school').text($.jStorage.get('school',''));
-			$('#time').val($.jStorage.get('time',''));
-			$('#summary-time').text($.jStorage.get('time',''));
-			$('#mylocation').val($.jStorage.get('mylocation',''));
-			$('#summary-mylocation').text($.jStorage.get('mylocation',''));
-			storageDate = $.jStorage.get('date','');
+			$('#school').val($.jStorage.get(Default.storagePrefix+'school',''));
+			$('#summary-school').text($.jStorage.get(Default.storagePrefix+'school',''));
+			$('#time').val($.jStorage.get(Default.storagePrefix+'time',''));
+			$('#summary-time').text($.jStorage.get(Default.storagePrefix+'time',''));
+			$('#mylocation').val($.jStorage.get(Default.storagePrefix+'mylocation',''));
+			$('#summary-mylocation').text($.jStorage.get(Default.storagePrefix+'mylocation',''));
+			storageDate = $.jStorage.get(Default.storagePrefix+'date','');
+			storageTravel = $.jStorage.get(Default.storagePrefix+'travel','');
+			Application.scheduledatacolumns = $.jStorage.get(Default.storagePrefix+'scheduledatacolumns',null);
+			Application.scheduledatarows = $.jStorage.get(Default.storagePrefix+'scheduledatarows',null);
+			Application.schooldatacolumns = $.jStorage.get(Default.storagePrefix+'schooldatacolumns',null);
+			Application.schooldatarows = $.jStorage.get(Default.storagePrefix+'schooldatarows',null);
+			
+			// Apply the date; today or tomorrow?
 			if(storageDate === 'today')
 			{
 				$('#date-today').addClass('active');
@@ -680,7 +803,9 @@
 				$('#summary-date').text('Tomorrow');
 				$('#date-tomorrow-icon').html(Default.check);
 			}
-			storageTravel = $.jStorage.get('travel','');
+			
+			// Apply the travel type
+			Application.travelmode = storageTravel;
 			if(storageTravel === 'WALKING')
 			{
 				$('#travel-walking').addClass('active');
@@ -700,12 +825,7 @@
 				$('#travel-driving').addClass('active');
 				$('#summary-travel').text('Driving');
 				$('#travel-driving-icon').html(Default.check);
-
 			}
-			Application.scheduledatacolumns = $.jStorage.get('scheduledatacolumns',null);
-			Application.scheduledatarows = $.jStorage.get('scheduledatarows',null);
-			Application.schooldatacolumns = $.jStorage.get('schooldatacolumns',null);
-			Application.schooldatarows = $.jStorage.get('schooldatarows',null);
 		}
 		
 		// If the form is completely filled out, go straight to the summary view
@@ -763,10 +883,6 @@
 		});
 		Application.Map.initMap();
 		
-		// Start up the google directions service and renderer
-		Application.DirectionsService = new google.maps.DirectionsService();
-		Application.DirectionsRenderer = new google.maps.DirectionsRenderer(Default.DirectionsOptions);
-		
 		// Pan/Zoom
 		Application.Map.setPanZoom(false);
 		Application.Map.setTouchScroll(true);
@@ -793,8 +909,8 @@
 				success: function (ftdata) {
 					if(localStorage)
 					{
-						$.jStorage.set('scheduledatacolumns',ftdata.columns);
-						$.jStorage.set('scheduledatarows',ftdata.rows);
+						$.jStorage.set(Default.storagePrefix+'scheduledatacolumns',ftdata.columns);
+						$.jStorage.set(Default.storagePrefix+'scheduledatarows',ftdata.rows);
 					}
 					getSchedule(ftdata.columns,ftdata.rows);
 				}
@@ -824,8 +940,8 @@
 				success: function (ftdata) {
 					if(localStorage)
 					{
-						$.jStorage.set('schooldatacolumns',ftdata.columns);
-						$.jStorage.set('schooldatarows',ftdata.rows);
+						$.jStorage.set(Default.storagePrefix+'schooldatacolumns',ftdata.columns);
+						$.jStorage.set(Default.storagePrefix+'schooldatarows',ftdata.rows);
 					}
 					getSchools(ftdata.columns,ftdata.rows);
 				}
@@ -847,7 +963,7 @@
 			$('#summary-school').text($('#school').val());
 			if(localStorage)
 			{
-				$.jStorage.set('school',$('#school').val());
+				$.jStorage.set(Default.storagePrefix+'school',$('#school').val());
 			}
 			Application.SchoolSelected = null;
 			for(var i in Schools)
@@ -899,7 +1015,7 @@
 		$('.date').on('click', function() {
 			if(localStorage)
 			{
-				$.jStorage.set('date', $(this).val());
+				$.jStorage.set(Default.storagePrefix+'date', $(this).val());
 			}
 			if($(this).val() === 'today')
 			{
@@ -931,7 +1047,7 @@
 				$('#summary-time').text(timestring);
 				if(localStorage)
 				{
-					$.jStorage.set('time', timestring);
+					$.jStorage.set(Default.storagePrefix+'time', timestring);
 				}
 			}
 			dateTimeNext();
@@ -952,7 +1068,7 @@
 				$('#summary-time').text(timestring);
 				if(localStorage)
 				{
-					$.jStorage.set('time', timestring);
+					$.jStorage.set(Default.storagePrefix+'time', timestring);
 				}
 			}
 			dateTimeNext();
@@ -962,7 +1078,7 @@
 		$('#time').timepicker().on('hide.timepicker', function() {
 			if(localStorage)
 			{
-				$.jStorage.set('time', $('#time').val());
+				$.jStorage.set(Default.storagePrefix+'time', $('#time').val());
 			}
 			$('#summary-time').text($('#time').val());
 			$('#time-start-icon,#time-end-icon').text('');
@@ -972,9 +1088,10 @@
 		
 		// travel change
 		$('.travel').on('click', function() {
+			Application.travelmode = $(this).val();
 			if(localStorage)
 			{
-				$.jStorage.set('travel', $(this).val());
+				$.jStorage.set(Default.storagePrefix+'travel', $(this).val());
 			}
 			if($(this).val() === 'WALKING')
 			{
@@ -1008,7 +1125,7 @@
 			}
 			if(localStorage)
 			{
-				$.jStorage.set('mylocation', $('#mylocation').val());
+				$.jStorage.set(Default.storagePrefix+'mylocation', $('#mylocation').val());
 			}
 			$('#summary-mylocation').text($('#mylocation').val());
 			if($('#mylocation').val() !== Application.MyLocation.address)
@@ -1087,6 +1204,7 @@
 			return function(){
 				$('#grp-summary,#isschool').hide();
 				$('#grp-'+grp).show();
+				$('#grp-directions').html('');
 				window.scrollTo(0, 1);
 			};
 		}
@@ -1098,6 +1216,12 @@
 		$('#summary-travel-btn').click(summarybtn('travel'));
 		
 		$('#summary-mylocation-btn').click(summarybtn('mylocation'));
+		
+		// GO! BUTTON
+		
+		$('#summary-go').click(function(){
+			route();
+		});
 	
 	});
 	
