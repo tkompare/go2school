@@ -13,12 +13,18 @@
 		check:'<i class="icon-ok icon-white"></i> ',
 		// Google DirectionsRenderer options
 		DirectionsOptions:{
-			suppressInfoWindows: true,
+			draggable:false,
+			markerOptions:{
+				zIndex:20000000
+			},
 			polylineOptions:{
-				strokeColor: '#0954cf',
-				strokeWeight: '5',
-				strokeOpacity: '.85'
-			}},
+				strokeColor: '#000',
+				strokeWeight: '4',
+				strokeOpacity: '.67',
+				zIndex:20000000
+			},
+			suppressInfoWindows: true
+		},
 		// DOM ID of where the Google Map is rendered
 		domid:'map',
 		// Google Fusion Tables URI
@@ -107,6 +113,8 @@
 		today:null,
 		// Tomorrow's Date
 		tomorrow:null,
+		// Google Traffic Layer
+		traffic:null,
 		// travel mode
 		travelmode:null
 	};
@@ -321,11 +329,11 @@
 						var phone = String(Schools[i].data.phone).replace('/[^0-9]/','');
 						if(isPhone)
 						{
-							$('#sick-tel').html('<a class="btn btn-mini btn-warning" style="margin-bottom:2px" href="tel:+1'+phone+'">Call: '+phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'</a>');
+							$('#sick-tel,#sick-tel-summary').html('<a class="btn btn-small btn-warning" style="margin-bottom:2px" href="tel:+1'+phone+'">Call: '+phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'</a>');
 						}
 						else
 						{
-							$('#sick-tel').html('<b>Call: '+phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'</b>');
+							$('#sick-tel,#sick-tel-summary').html('<b>Call: '+phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'</b>');
 						}
 						$('#sick').show();
 					}
@@ -653,7 +661,7 @@
 					$('#summary-school').text(Schools[i].data.longname);
 					$('#school').val(Schools[i].data.longname);
 					var phone = String(Schools[i].data.phone).replace('/[^0-9]/','');
-					$('#sick-tel').text('Call: '+phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4));
+					$('#sick-tel,#sick-tel-summary').text('Call: '+phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4));
 					$('#sick').show();
 					if(localStorage)
 					{
@@ -698,9 +706,6 @@
 				// subtract 10 minutes so the user has a bit of a real-life buffer.
 				arrivalTime : new Date(unixtime - 600000)
 			};
-			Application.DirectionsRenderer.setMap(Application.Map.Map);
-			//$('#grp-directions').html('');
-			Application.DirectionsRenderer.setPanel(document.getElementById('directions'));
 			var RouteRequest = null;
 			if(Application.travelmode === 'TRANSIT')
 			{
@@ -733,9 +738,11 @@
 				{
 					if (Status == google.maps.DirectionsStatus.OK)
 					{
-						$('#directions').html('');
-						$('#timetoleave').html('');
+						$('#grp-directions').html('<div id=timetoleave class="span12 center"></div><div id=directions class="span8 offset2"></div>');
+						$('#grp-directions').addClass('padded');
 						$('#grp-directions').show();
+						Application.DirectionsRenderer.setMap(Application.Map.Map);
+						Application.DirectionsRenderer.setPanel(document.getElementById('directions'));
 						var route = 0;
 						for(var i=0; i<Response.routes.length; i++)
 						{
@@ -751,7 +758,7 @@
 							Response.routes[i].copyrights = '';
 						}
 						Application.DirectionsRenderer.setDirections(Response);
-						if(Application.travelmode == 'TRANSIT')
+						if(Application.travelmode === 'TRANSIT')
 						{
 							$('#timetoleave').html('<h4>Leave '+$('#summary-date').text()+' by '+Response.routes[route].legs[0].departure_time.text+'</h4>');
 						}
@@ -780,6 +787,21 @@
 							var leaveByDateString = hour+':'+minute+' '+ampm;
 							$('#timetoleave').html('<h4>Leave '+$('#summary-date').text()+' by '+leaveByDateString+'</h4>');
 						}
+						if(Application.travelmode === 'TRANSIT' || Application.travelmode === 'DRIVING')
+						{
+							if(Application.traffic === null)
+							{
+								Application.traffic = new google.maps.TrafficLayer();
+							}
+							Application.traffic.setMap(Application.Map.Map);
+						}
+						else
+						{
+							if(Application.traffic !== null)
+							{
+								Application.traffic.setMap(null);
+							}
+						}
 					}
 					else
 					{
@@ -787,9 +809,6 @@
 						{
 							Application.DirectionsRenderer.setMap(null);
 						}
-//						$('#theform').hide(750);
-//						$('#span-cta').show(750);
-//						$('#timetoleave').html('<p class="lead">Directions</p>');
 						$('#directions').html('<p><b>We are sorry. We cannot route you to this school.</b> It is likely that your local transit authority has not released schedule times. Please check back soon.</p>');
 					}
 				});
@@ -856,11 +875,8 @@
 		// If the form is completely filled out, go straight to the summary view
 		if($('#school').val() !== '' && $('#time').val() !== '' && storageDate !== '' && $('#mylocation').val() !== '' && storageTravel !== '')
 		{
-			$('#grp-intro,#grp-school,#grp-travel,#grp-time,#grp-mylocation').hide();
-		}
-		else
-		{
-			$('#grp-school,#grp-travel,#grp-time,#grp-mylocation,#grp-summary,#sick').hide();
+			$('#grp-intro').hide();
+			$('#grp-summary').show();
 		}
 		// Disable next buttons when form fields are empty
 		if($('#school').val() === '')
@@ -997,7 +1013,7 @@
 				{
 					Application.SchoolSelected = Schools[i];
 					var phone = String(Schools[i].data.phone).replace('/[^0-9]/','');
-					$('#sick-tel').text('Call: '+phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4));
+					$('#sick-tel,#sick-tel-summary').text('Call: '+phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4));
 					$('#sick').show();
 					break;
 				}
@@ -1021,9 +1037,13 @@
 				regex = new RegExp($('#school').val(),'gi');
 				setSchool(Schools,regex);
 			}
-			if($('#school').val().length > 0)
+			if($('#school').val().length > 0 && Application.SchoolSelected !== null)
 			{
 				$('#school-next').removeClass('disabled').removeAttr('disabled');
+			}
+			else
+			{
+				$('#school-next').addClass('disabled').attr('disabled','disabled');
 			}
 			centeronschool();
 		});
@@ -1229,7 +1249,18 @@
 			return function(){
 				$('#grp-summary,#isschool').hide();
 				$('#grp-'+grp).show();
-				$('#directions,#timetoleave').html('');
+				$('#grp-directions').html('');
+				$('grp-directions').removeClass('center padded');
+				if(Application.traffic !== null)
+				{
+					Application.traffic.setMap(null);
+				}
+				if(Application.DirectionsRenderer !== null)
+				{
+					Application.DirectionsRenderer.setMap(null);
+				}
+				Application.Map.Map.panTo(Application.SchoolSelected.latlng);
+				Application.Map.Map.setZoom(Default.zoom);
 				window.scrollTo(0, 1);
 			};
 		}

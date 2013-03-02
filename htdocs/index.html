@@ -19,8 +19,10 @@
 	.center{text-align:center}
 	.margin2{margin-bottom:2em;margin-top:2em}
 	.adp-directions{width:100%}
+	#grp-school,#grp-time,#grp-travel,#grp-mylocation,#grp-summary,#sick{display:none}
 	@media only screen and (min-width:768px) {
-		#directions,#summary-go { position:relative;left:-2em; }
+		#directions,#summary-go{position:relative;left:-2em}
+		#timepicker,#date-btns,#time-btns{margin-bottom:2em;margin-top:2em}
 	}
 </style>
 <title>GoToSchool</title>
@@ -30,8 +32,8 @@
 		<div id=before-map class=span12>
 			<h2 class=center>Go To School!</h2>
 			<div id=isschool>
-				<div class=center><h5><span id=schedule></span></h5></div>
-				<div class=center><h5><span id=schedule-tomorrow></span></h5></div>
+				<div class=center><b><span id=schedule></span></b></div>
+				<div class=center><b><span id=schedule-tomorrow></span></b></div>
 			</div>
 			<div id=grp-intro class="control-group center padded margin2">
 				<p class="center padded margin2"><span id=intro-text>Answer four questions and get to your Chicago public school on time.</span></p>
@@ -42,6 +44,7 @@
 				<div class=controls>
 					<input id=school class=span10 type=text placeholder="Name of school" />
 				</div>
+				<span id=sick class=center>Sick? <span id=sick-tel></span></span>
 				<div class="center margin2">
 					<button id=school-next class="btn btn-large btn-primary">Next</button><br>
 					<small>1/4</small>
@@ -50,17 +53,17 @@
 			</div>
 			<div id=grp-time class=margin2>
 				<h4 class=center>What time do you want to arrive?</h4>
-				<div class="padded margin2" data-toggle=buttons-radio>
+				<div id=date-btns class=padded data-toggle=buttons-radio>
 					<span class=span6><button id=date-today name=date value=today class="btn btn-large btn-primary btn-block date"><span id=date-today-icon></span>Today</button></span>
 					<span class=span6><button id=date-tomorrow name=date value=tomorrow class="btn btn-large btn-primary btn-block date"><span id=date-tomorrow-icon></span>Tomorrow</button></span>
 					<br><br>
 				</div>
-				<div class="padded margin2" data-toggle=buttons-radio>
+				<div id=time-btns class=padded data-toggle=buttons-radio>
 					<span class=span6><button id=time-start name=time value=start class="btn btn-large btn-warning btn-block"><span id=time-start-icon></span>Start of school<span id=time-start-time></span></button></span>
 					<span class=span6><button id=time-end name=time value=end class="btn btn-large btn-warning btn-block"><span id=time-end-icon></span>End of school<span id=time-end-time></span></button></span>
 					<br><br>
 				</div>
-				<div class="center padded margin2">
+				<div id=timepicker class="center padded">
 					<label class="control-label" for="time"><b>Choose your own time</b></label>
 					<div class="bootstrap-timepicker">
 						<input id="time" type="text" class="span6"/>
@@ -104,6 +107,7 @@
 					<tr><td><b>Time to Arrive:</b></td><td><span id=summary-time></span> - <span id=summary-date></span><button id=summary-time-btn class="btn btn-mini pull-right" type="button">Edit</button></td></tr>
 					<tr><td><b>Travel Mode:</b></td><td><span id=summary-travel></span><button id=summary-travel-btn class="btn btn-mini pull-right" type="button">Edit</button></td></tr>
 					<tr><td><b>Leaving From:</b></td><td><span id=summary-mylocation></span><button id=summary-mylocation-btn class="btn btn-mini pull-right" type="button">Edit</button></td></tr>
+					<tr><td><b>Sick?</b></td><td><span id=sick-tel-summary></span></td><td></td>
 				</table>
 				</div>
 				<div class="span2 offset5">
@@ -111,17 +115,9 @@
 				</div>
 			</div>
 		</div>
-		<div id=grp-directions class="control-group center padded margin2">
-			<div class=span12>
-				<div id=timetoleave class="span12 center margin2"></div>
-				<div id=directions class="span8 offset2"></div>
-			</div>
-		</div>
+		<div id=grp-directions></div>
 	</div>
-	<div id=twitter class=padded>
-		<a href="https://twitter.com/share" class="twitter-share-button" data-text="Find your way to a @ChiPubSchools school." data-url="http://go2school.smartchicagoapps.org" data-related="tomkompare:Author of GoToSchool,chipubschools:Offical Account of CPS,opengovchicago:A meetup group for government and community members" data-lang="en" data-size="small" data-count="none">Tweet</a>
-		<span id=sick class=pull-right>Sick? <span id=sick-tel></span></span>
-	</div>
+	<div id=twitter>&nbsp;</div>
 	<div id=div-map class=row-fluid>
 		<div id=the-map class=span12>
 			<div id=map-width style="display:inline-block; position:relative; width:100%;">
@@ -136,7 +132,8 @@
 		<footer class=padded style="background-color:#333;color:white;overflow:hidden">
 			<div class="span4 margin2">
 				<p><a href="http://www.cps.edu" style="color:orange">Chicago Public Schools</a></p>
-				<p>773-553-1000</p>
+				<p><a href="https://twitter.com/share" class="twitter-share-button" data-text="Find your way to a @ChiPubSchools school." data-url="http://go2school.smartchicagoapps.org" data-related="tomkompare:Author of GoToSchool,chipubschools:Offical Account of CPS,opengovchicago:A meetup group for government and community members" data-lang="en" data-size="small" data-count="none">Tweet</a></p>
+				
 			</div>
 			<div class="span8 margin2">
 				<p class=pull-right><small>This map was not developed by
