@@ -238,6 +238,14 @@
 		{
 			this.query = null;
 			this.url = [];
+			
+			this.populateUrl = function(fturl,query,googlemapsapikey)
+			{
+				this.url = [fturl];
+				this.url.push('?sql='+query);
+				this.url.push('&key='+googlemapsapikey);
+				this.url.push('&callback=?');
+			};
 		};
 		return constructor;
 	})();
@@ -444,41 +452,28 @@
 				{
 					Default.schooltoday = Schedules[i].data.unifiedcalendar;
 				}
-				if(Schedules[i].data.date === Application.tomorrow)
+				else if(Schedules[i].data.date === Application.tomorrow)
 				{
 					Default.schooltomorrow = Schedules[i].data.unifiedcalendar;
 				}
 			}
-			if(Default.schooltoday === 'Full Day')
+			function checkSchedule(dateType,date,domId)
 			{
-				$('#schedule').html(Default.schooltoday+' Today');
-				$('#schedule').addClass('text-success');
+				if(dateType === 'Full Day')
+				{
+					$('#'+domId).html(dateType+' '+date);
+				}
+				else if(dateType === 'No Schedule Available')
+				{
+					$('#'+domId).html(dateType).addClass('muted');
+				}
+				else
+				{
+					$('#schedule').html(dateType+' '+date).addClass('text-warning');
+				}
 			}
-			else if(Default.schooltoday === 'No Schedule Available')
-			{
-				$('#schedule').html(Default.schooltoday+', so we don\'t know.');
-				$('#schedule').addClass('text-warning');
-			}
-			else
-			{
-				$('#schedule').html(Default.schooltoday+' Today');
-				$('#schedule').addClass('text-error');
-			}
-			if(Default.schooltomorrow === 'Full Day')
-			{
-				$('#schedule-tomorrow').html(Default.schooltomorrow+' Tomorrow');
-				$('#schedule-tomorrow').addClass('text-success');
-			}
-			else if(Default.schooltomorrow === 'No Schedule Available')
-			{
-				$('#schedule-tomorrow').html(Default.schooltomorrow+', so we don\'t know.');
-				$('#schedule-tomorrow').addClass('text-warning');
-			}
-			else
-			{
-				$('#schedule-tomorrow').html(Default.schooltomorrow+' Tomorrow');
-				$('#schedule-tomorrow').addClass('text-error');
-			}
+			checkSchedule(Default.schooltoday,'Today','schedule');
+			checkSchedule(Default.schooltomorrow,'Tomorrow','schedule-tomorrow');
 		}
 		
 		/**
@@ -617,7 +612,7 @@
 				{
 					Application.Map.setPanZoom(true);
 					Application.Map.setTouchScroll(false);
-					$('#before-map,#div-footer,#twitter,#grp-directions').hide(750,function(){
+					$('#before-map,#div-footer,#grp-directions').hide(750,function(){
 						$('#map-width').css('height','100%');
 						$('#map-ratio').css('margin-top', window.innerHeight);
 						controlUI.title = 'Click to close up the map.';
@@ -634,7 +629,7 @@
 				{
 					Application.Map.setPanZoom(false);
 					Application.Map.setTouchScroll(true);
-					$('#before-map,#div-footer,#twitter,#grp-directions').show(750,function(){
+					$('#before-map,#div-footer,#grp-directions').show(750,function(){
 						$('#map-width').css('height','');
 						$('#map-ratio').css('margin-top','200px');
 						controlUI.title = 'Click to interact with the map.';
@@ -736,7 +731,7 @@
 			}
 			Application.DirectionsService.route(RouteRequest, function(Response, Status)
 				{
-					if (Status == google.maps.DirectionsStatus.OK)
+					if (Status === google.maps.DirectionsStatus.OK)
 					{
 						$('#grp-directions').html('<div id=timetoleave class="span12 center"></div><div id=directions class="span8 offset2"></div>');
 						$('#grp-directions').addClass('padded');
@@ -748,7 +743,7 @@
 						{
 							for(var j=0; j<Response.routes[i].legs[0].steps.length; j++)
 							{
-								if(Response.routes[i].legs[0].steps[j].travel_mode == Application.travelmode)
+								if(Response.routes[i].legs[0].steps[j].travel_mode === Application.travelmode)
 								{
 									route = i;
 									break;
@@ -756,6 +751,10 @@
 							}
 							delete Response.routes[i].warnings;
 							Response.routes[i].copyrights = '';
+						}
+						for(var i in Schools)
+						{
+							Schools[i].marker.setMap(null);
 						}
 						Application.DirectionsRenderer.setDirections(Response);
 						if(Application.travelmode === 'TRANSIT')
@@ -802,6 +801,7 @@
 								Application.traffic.setMap(null);
 							}
 						}
+						
 					}
 					else
 					{
@@ -881,23 +881,19 @@
 		// Disable next buttons when form fields are empty
 		if($('#school').val() === '')
 		{
-			$('#school-next').addClass('disabled');
-			$('#school-next').attr('disabled','disabled');
+			$('#school-next').addClass('disabled').attr('disabled','disabled');
 		}
 		if(storageDate === '' || $('#time').val() === '')
 		{
-			$('#time-next').addClass('disabled');
-			$('#time-next').attr('disabled','disabled');
+			$('#time-next').addClass('disabled').attr('disabled','disabled');
 		}
 		if(storageTravel === '')
 		{
-			$('#travel-next').addClass('disabled');
-			$('#travel-next').attr('disabled','disabled');
+			$('#travel-next').addClass('disabled').attr('disabled','disabled');
 		}
 		if($('#mylocation').val() === '')
 		{
-			$('#mylocation-next').addClass('disabled');
-			$('#mylocation-next').attr('disabled','disabled');
+			$('#mylocation-next').addClass('disabled').attr('disabled','disabled');
 		}
 		
 	// Set up the timepicker - bootstrap-timepicker.js
@@ -939,10 +935,7 @@
 			ScheduleFT.query = encodeURIComponent(Default.schoolschedulequery);
 			
 			// Construct the School Location URL
-			ScheduleFT.url = [Default.fturl];
-			ScheduleFT.url.push('?sql='+ScheduleFT.query);
-			ScheduleFT.url.push('&key='+Default.googlemapsapikey);
-			ScheduleFT.url.push('&callback=?');
+			ScheduleFT.populateUrl(Default.fturl,ScheduleFT.query,Default.googlemapsapikey);
 			
 			$.ajax({
 				url: ScheduleFT.url.join(''),
@@ -969,10 +962,7 @@
 			SchoolFT.query = encodeURIComponent(Default.schoollocationquery);
 			
 			// Construct the School Location URL
-			SchoolFT.url = [Default.fturl];
-			SchoolFT.url.push('?sql=' + SchoolFT.query);
-			SchoolFT.url.push('&key='+Default.googlemapsapikey);
-			SchoolFT.url.push('&callback=?');
+			SchoolFT.populateUrl(Default.fturl,SchoolFT.query,Default.googlemapsapikey);
 			
 			// Get the School Location FT data!
 			$.ajax({
@@ -992,6 +982,7 @@
 		{
 			getSchools(Application.schooldatacolumns,Application.schooldatarows);
 		}
+		
 		// LISTENERS --------------------------------------------------------------
 		
 		// find me button click
@@ -1258,6 +1249,10 @@
 				if(Application.DirectionsRenderer !== null)
 				{
 					Application.DirectionsRenderer.setMap(null);
+				}
+				for(var i in Schools)
+				{
+					Schools[i].marker.setMap(Application.Map.Map);
 				}
 				Application.Map.Map.panTo(Application.SchoolSelected.latlng);
 				Application.Map.Map.setZoom(Default.zoom);

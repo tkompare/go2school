@@ -14,22 +14,29 @@
 <link href="css/bootstrap-timepicker.min.css" rel=stylesheet>
 <style type=text/css>
 	body {padding-top:0px;padding-bottom:0px;padding-left:0px;padding-right:0px}
+	body,#the-map{background-color:#333}
+	#before-map-fluid{background-color:#fafafa}
+	#help p{color:#ddd}
+	#help b{color:#fff}
 	#map img{max-width:none}
 	.padded{padding-left:10px;padding-right:10px}
 	.center{text-align:center}
+	.marginb2{margin-bottom:2em}
+	.margint1{margin-top:1em}
 	.margin2{margin-bottom:2em;margin-top:2em}
-	.adp-directions{width:100%}
 	#grp-school,#grp-time,#grp-travel,#grp-mylocation,#grp-summary,#sick{display:none}
 	@media only screen and (min-width:768px) {
 		#directions,#summary-go{position:relative;left:-2em}
 		#timepicker,#date-btns,#time-btns{margin-bottom:2em;margin-top:2em}
 	}
+	.adp-directions{width:100%}
+	.adp-text{padding-left:2em}
 </style>
 <title>GoToSchool</title>
 </head>
 <body>
-	<div class=row-fluid>
-		<div id=before-map class=span12>
+	<div id=before-map-fluid class=row-fluid>
+		<div id=before-map class="span12">
 			<h2 class=center>Go To School!</h2>
 			<div id=isschool>
 				<div class=center><b><span id=schedule></span></b></div>
@@ -110,14 +117,13 @@
 					<tr><td><b>Sick?</b></td><td><span id=sick-tel-summary></span></td><td></td>
 				</table>
 				</div>
-				<div class="span2 offset5">
+				<div class="span2 offset5 marginb2">
 					<button id=summary-go class="btn btn-large btn-warning">Go!</button><br>
 				</div>
 			</div>
 		</div>
 		<div id=grp-directions></div>
 	</div>
-	<div id=twitter>&nbsp;</div>
 	<div id=div-map class=row-fluid>
 		<div id=the-map class=span12>
 			<div id=map-width style="display:inline-block; position:relative; width:100%;">
@@ -130,12 +136,14 @@
 	</div>
 	<div id=div-footer class=row-fluid>
 		<footer class=padded style="background-color:#333;color:white;overflow:hidden">
-			<div class="span4 margin2">
+			<div class="span4 margint1">
 				<p><a href="http://www.cps.edu" style="color:orange">Chicago Public Schools</a></p>
-				<p><a href="https://twitter.com/share" class="twitter-share-button" data-text="Find your way to a @ChiPubSchools school." data-url="http://go2school.smartchicagoapps.org" data-related="tomkompare:Author of GoToSchool,chipubschools:Offical Account of CPS,opengovchicago:A meetup group for government and community members" data-lang="en" data-size="small" data-count="none">Tweet</a></p>
-				
+				<p>
+					<a href="https://twitter.com/share" class="twitter-share-button" data-text="Find your way to a @ChiPubSchools school." data-url="http://go2school.smartchicagoapps.org" data-related="tomkompare:Author of GoToSchool,chipubschools:Offical Account of CPS,opengovchicago:A meetup group for government and community members" data-lang="en" data-size="small" data-count="none">Tweet</a>
+					&nbsp;&nbsp;<span class="g-plusone" data-size="medium" data-annotation="none"></span>
+				</p>
 			</div>
-			<div class="span8 margin2">
+			<div class="span8 margint1">
 				<p class=pull-right><small>This map was not developed by
 					the Chicago Public Schools (CPS) and CPS makes no representations as to the 
 					accuracy of the information provided by this map application. 
@@ -149,16 +157,26 @@
 			</div>
 			<div class=span11>
 				<hr>
+				<div id=help>
 				<h4>Help</h4>
-				<p>Bacon ipsum dolor sit amet pancetta salami leberkas doner tri-tip turducken ball tip shankle sirloin strip steak prosciutto shoulder ham tongue bresaola. Ball tip t-bone pancetta meatloaf pig pork chop salami tenderloin chuck spare ribs short loin beef corned beef brisket bresaola. Jowl cow rump, prosciutto filet mignon short loin turkey hamburger chicken jerky. Drumstick chicken pork belly shankle bacon ham hock meatloaf ham sirloin pastrami.</p>
+					<p>To get started, press the <b>Start</b> button and answer four questions to find your way to school on time:</p>
+					<p><b>1. What is the name of your school?</b> Start typing in any part of your school's name and you'll see matching names names appear as you type. Continue typing or select a name in the drop-down. Once a school name is entered, the school's office phone number will appear. Call this number to report an absence. On an iPhone or Android smartphone, click on the number to call. Click <b>Next</b> to move to the next question.</p>
+					<p><b>2. What time do you want to arrive?</b> Choose either <b>Today</b> or <b>Tomorrow</b>, then choose <b>Start of School</b> or <b>End of School</b>. You may also enter your own time. Click <b>Next</b> to move on.</p>
+					<p><b>3. How are you getting there?</b> Select <b>Walking</b>, <b>CTA/Metra</b>, or <b>Driving</b>. Thenk click <b>Next</b>.</p>
+					<p><b>4. Where are you?</b> Enter the address of the location where you are starting from. If you are in Chicago, you may just enter the street address (example: 1 W Madison). If you are starting outside of Chicago, you must also enter the city and state. If you are on a GPS capable device, you may use the <b>Find Me</b> link to automatically fill in this information. Click the <b>Next</b> button to move on.</p>
+					<br>
+					<b>Summary</b><br>
+					<p>Once you answer all four questions, you will see a summary of your choices. Use the <b>Edit</b> buttons to go back and change your choices. On iPhone and Android devices, click on the <b>Call</b> button to call the school office. You might need to report an absence.</p>
+					<p>Press the <b>Go!</b> button to get directions to school and a recommended time to leave. The route recommendation and dearture time estimate are automatically generated. While they are good enough for average conditions, take care to make sure the recommendations are right for you. Factors such as neighborhood conditions, traffic, or walking pace may differ daily and by location. To help, street traffic congestion for Chicago are indicated on the map if you choose <b>Driving</b> or <b>CTA/Metra</b> for your travel mode. Green is light traffic, yellow is moderate traffic, and red is heavy traffic conditions.</p>
+					<p>A feature of Go To School is that it saves your choices on your device. The next time you come back with the same device, you will not have to reenter your information.</p>
+				</div>
 			</div>
 		</footer>
 	</div>
-	<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="https://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
 	<script>window.jQuery || document.write('<script src="js/jquery-1.9.0.min.js"><\/script>')</script>
 	<script src="//maps.googleapis.com/maps/api/js?key=AIzaSyDH5WuL3gKYVBWVqLr6g3PQffdZE-XhBUw&sensor=true" type="text/javascript"></script>
-	<!-- These nine .js files rolled into 'main.min.js' -->
+	<!-- These ten .js files rolled into 'main.min.js'
 		<script src="js/bootstrap.js"></script>
 		<script src="js/jquery.json-2.4.js"></script>
 		<script src="js/bootstrap-timepicker.js"></script>
@@ -167,8 +185,9 @@
 		<script src="js/date.js"></script>
 		<script src="js/tkmap.4.0.0.js"></script>
 		<script src="js/infobox.js"></script>
+		<script src="js/share.js</script>
 		<script src="js/main.js"></script>
-
-<!-- <script src="js/main.min.js"></script> -->
+-->
+<script src="js/main.min.js"></script>
 </body>
 </html>
