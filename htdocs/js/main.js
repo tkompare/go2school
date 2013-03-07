@@ -469,7 +469,7 @@
 				}
 				else
 				{
-					$('#schedule').html(dateType+' '+date).addClass('text-warning');
+					$('#'+domId).html(dateType+' '+date).addClass('text-warning');
 				}
 			}
 			checkSchedule(Default.schooltoday,'Today','schedule');
@@ -983,6 +983,13 @@
 			getSchools(Application.schooldatacolumns,Application.schooldatarows);
 		}
 		
+		// Is this dev?
+		if(typeof ThisIsDev === 'function')
+		{
+			var Development = new ThisIsDev();
+			Development.notice('before-map');
+		}
+		
 		// LISTENERS --------------------------------------------------------------
 		
 		// find me button click
@@ -1273,7 +1280,7 @@
 		$('#summary-go').click(function(){
 			route();
 		});
-	
+
 	});
-	
+
 })();
