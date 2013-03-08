@@ -29,39 +29,39 @@
 		domid:'map',
 		// Google Fusion Tables URI
 		fturl:'https://www.googleapis.com/fusiontables/v1/query',
+		// Google maps API key
+		googlemapsapikey:'AIzaSyDH5WuL3gKYVBWVqLr6g3PQffdZE-XhBUw',
+		// infobox.js options
+		infoboxoptions:{
+			disableAutoPan: false,
+			maxWidth: 0,
+			pixelOffset: new google.maps.Size(-140, 0),
+			zIndex: null,
+			boxStyle: {
+				background: "url('img/tipbox.gif') no-repeat",
+				opacity: 0.9,
+				width: "160px"
+			},
+			closeBoxMargin: "11px 4px 4px 4px",
+			closeBoxURL: "img/close.gif",
+			infoBoxClearance: new google.maps.Size(20, 30),
+			visible: false,
+			pane: "floatPane",
+			enableEventPropagation: false
+		},
 		// Start center latutude of the Google map
 		lat:41.85,
 		// Start center longitude of the Google map
 		lng:-87.675,
-		// State/Province name passed to Google for geolocation
-		state:'IL',
-		// Defined style types passed to TkMap
-		styles:'grey minlabels',
 		// Default message for today
 		schooltoday:'No Schedule Available',
 		// Default message for tomorrow
 		schooltomorrow:'No Schedule Available',
-		// Google maps API key
-		googlemapsapikey:'AIzaSyDH5WuL3gKYVBWVqLr6g3PQffdZE-XhBUw',
 		// Google Fusion Tables SQL-like query string for school schedule data
 		schoolschedulequery:'SELECT date, dayofweek, unifiedcalendar FROM 1u765vIMSPecSEinBe1H6JPYSFE5ljbAW1Mq3okc',
 		// Google Fusion Tables SQL-like query string for school location data
 		schoollocationquery:'SELECT lat, lng, longname, address, postalcode, phone, start, end FROM 1qCOcgrhGwjt6bdx_UVPSkyIMMVD-1C7CJFvpIjI',
-		// DOM ID target for the spinner
-		spinnerTarget:document.getElementById('before-map'),
-		// Local Storage prefix
-		storagePrefix:'gro.sppaogacihc.loohcs2og-',
-		// Bootstrap timepicker options
-		TimepickerOptions:{
-			minuteStep:5,
-			showInputs:false,
-			disableFocus:true,
-			template:'modal',
-			modalBackdrop:true
-		},
-		// Initial zoom level for the Google map
-		zoom:14,
-		// Spinner Options
+		// spin.js Spinner Options
 		spinnerOpts:{
 			lines: 13, // The number of lines to draw
 			length: 7, // The length of each line
@@ -78,7 +78,25 @@
 			zIndex: 2e9, // The z-index (defaults to 2000000000)
 			top: 'auto', // Top position relative to parent in px
 			left: 'auto' // Left position relative to parent in px
-		}
+		},
+		// DOM ID target for the spin.js spinner
+		spinnerTarget:document.getElementById('before-map'),
+		// State/Province name passed to Google for geolocation
+		state:'IL',
+		// Local Storage prefix
+		storagePrefix:'go2school.smartchicagoapps.org-',
+		// Defined style types passed to TkMap
+		styles:'grey minlabels',
+		// bootstrap-timepicker.js options
+		TimepickerOptions:{
+			minuteStep:5,
+			showInputs:false,
+			disableFocus:true,
+			template:'modal',
+			modalBackdrop:true
+		},
+		// Initial zoom level for the Google map
+		zoom:14
 	};
 	
 	/**
@@ -99,21 +117,13 @@
 			LatLng:null,
 			address:null
 		},
-		// Schedule data column names
-		scheduledatacolumns:null,
-		// Schedule data rows
-		scheduledatarows:null,
-		// School data column names
-		schooldatacolumns:null,
-		// School data rows
-		schooldatarows:null,
 		// The school currently selected
 		SchoolSelected:null,
 		// Today's Date mm/dd/yyyy
 		today:null,
-		// Tomorrow's Date
+		// Tomorrow's Date mm/dd/yyyy
 		tomorrow:null,
-		// Google Traffic Layer
+		// Google Maps API Traffic Layer
 		traffic:null,
 		// travel mode
 		travelmode:null
@@ -234,18 +244,11 @@
 	 * @type class
 	 */
 	var FusionTable = (function(){
-		var constructor = function()
+		var constructor = function(url,query,googlemapsapikey)
 		{
-			this.query = null;
-			this.url = [];
-			
-			this.populateUrl = function(fturl,query,googlemapsapikey)
-			{
-				this.url = [fturl];
-				this.url.push('?sql='+query);
-				this.url.push('&key='+googlemapsapikey);
-				this.url.push('&callback=?');
-			};
+			this.columns = null;
+			this.rows = null;
+			this.url = url+'?sql='+encodeURIComponent(query)+'&key='+googlemapsapikey+'&callback=?';
 		};
 		return constructor;
 	})();
@@ -382,24 +385,8 @@
 				Schools[i].data.longname+'<br />'+
 				Schools[i].data.address+'<br />'+
 				phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'<br /></div>';
-				var options = {
-					content: Schools[i].infoboxtext,
-					disableAutoPan: false,
-					maxWidth: 0,
-					pixelOffset: new google.maps.Size(-140, 0),
-					zIndex: null,
-					boxStyle: {
-						background: "url('img/tipbox.gif') no-repeat",
-						opacity: 0.9,
-						width: "160px"
-					},
-					closeBoxMargin: "11px 4px 4px 4px",
-					closeBoxURL: "img/close.gif",
-					infoBoxClearance: new google.maps.Size(20, 30),
-					visible: false,
-					pane: "floatPane",
-					enableEventPropagation: false
-				};
+				var options = Default.infoboxoptions;
+				options.content = Schools[i].infoboxtext;
 				// Make the info box
 				Schools[i].infobox = new InfoBox(options);
 				// Set the selected school, if the school name entered matchs the longname
@@ -678,8 +665,7 @@
 			Application.DirectionsRenderer = new google.maps.DirectionsRenderer(Default.DirectionsOptions);
 			
 			var userTime = $('#time').val().replace(/\s/g,'');
-			// Google directions service doesn't seem to like midnight or noon with
-			// an AM/PM attached.
+			// Date.js doesn't seem to like midnight or noon with an AM/PM attached.
 			if(userTime === '12:00AM')
 			{
 				userTime = '00:00';
@@ -701,33 +687,22 @@
 				// subtract 10 minutes so the user has a bit of a real-life buffer.
 				arrivalTime : new Date(unixtime - 600000)
 			};
-			var RouteRequest = null;
+			var RouteRequest = {
+				origin : $('#mylocation').val()+', ' + Default.city + ', ' + Default.state,
+				destination : Application.SchoolSelected.data.address+', '+Default.city+', '+Default.state+' '+Application.SchoolSelected.data.postalcode,
+				transitOptions : transitOptions
+			};
 			if(Application.travelmode === 'TRANSIT')
 			{
-				RouteRequest = {
-					origin : $('#mylocation').val()+', ' + Default.city + ', ' + Default.state,
-					destination : Application.SchoolSelected.data.address+', '+Default.city+', '+Default.state+' '+Application.SchoolSelected.data.postalcode,
-					transitOptions : transitOptions,
-					travelMode: google.maps.TravelMode.TRANSIT
-				};
+				RouteRequest.travelMode = google.maps.TravelMode.TRANSIT;
 			}
 			else if(Application.travelmode === 'WALKING')
 			{
-				RouteRequest = {
-					origin : $('#mylocation').val()+', ' + Default.city + ', ' + Default.state,
-					destination : Application.SchoolSelected.data.address+', '+Default.city+', '+Default.state+' '+Application.SchoolSelected.data.postalcode,
-					transitOptions : transitOptions,
-					travelMode: google.maps.TravelMode.WALKING
-				};
+				RouteRequest.travelMode = google.maps.TravelMode.WALKING;
 			}
 			else
 			{
-				RouteRequest = {
-					origin : $('#mylocation').val()+', ' + Default.city + ', ' + Default.state,
-					destination : Application.SchoolSelected.data.address+', '+Default.city+', '+Default.state+' '+Application.SchoolSelected.data.postalcode,
-					transitOptions : transitOptions,
-					travelMode: google.maps.TravelMode.DRIVING
-				};
+				RouteRequest.travelMode = google.maps.TravelMode.DRIVING;
 			}
 			Application.DirectionsService.route(RouteRequest, function(Response, Status)
 				{
@@ -819,6 +794,8 @@
 		// See if local storage has any values to fill in the form with
 		var storageDate = '';
 		var storageTravel = '';
+		var ScheduleFT = new FusionTable(Default.fturl,Default.schoolschedulequery,Default.googlemapsapikey);
+		var SchoolFT = new FusionTable(Default.fturl,Default.schoollocationquery,Default.googlemapsapikey);
 		if(localStorage)
 		{
 			$('#school').val($.jStorage.get(Default.storagePrefix+'school',''));
@@ -829,10 +806,10 @@
 			$('#summary-mylocation').text($.jStorage.get(Default.storagePrefix+'mylocation',''));
 			storageDate = $.jStorage.get(Default.storagePrefix+'date','');
 			storageTravel = $.jStorage.get(Default.storagePrefix+'travel','');
-			Application.scheduledatacolumns = $.jStorage.get(Default.storagePrefix+'scheduledatacolumns',null);
-			Application.scheduledatarows = $.jStorage.get(Default.storagePrefix+'scheduledatarows',null);
-			Application.schooldatacolumns = $.jStorage.get(Default.storagePrefix+'schooldatacolumns',null);
-			Application.schooldatarows = $.jStorage.get(Default.storagePrefix+'schooldatarows',null);
+			ScheduleFT.columns = $.jStorage.get(Default.storagePrefix+'scheduleftcolumns',null);
+			ScheduleFT.rows = $.jStorage.get(Default.storagePrefix+'scheduleftrows',null);
+			SchoolFT.columns = $.jStorage.get(Default.storagePrefix+'schoolftcolumns',null);
+			SchoolFT.rows = $.jStorage.get(Default.storagePrefix+'schoolftrows',null);
 			
 			// Apply the date; today or tomorrow?
 			if(storageDate === 'today')
@@ -879,34 +856,34 @@
 			$('#grp-summary').show();
 		}
 		// Disable next buttons when form fields are empty
+		function disable(domid){
+			$('#'+domid).addClass('disabled').attr('disabled','disabled');
+		};
 		if($('#school').val() === '')
 		{
-			$('#school-next').addClass('disabled').attr('disabled','disabled');
+			disable('school-next');
 		}
 		if(storageDate === '' || $('#time').val() === '')
 		{
-			$('#time-next').addClass('disabled').attr('disabled','disabled');
+			disable('time-next');
 		}
 		if(storageTravel === '')
 		{
-			$('#travel-next').addClass('disabled').attr('disabled','disabled');
+			disable('travel-next');
 		}
 		if($('#mylocation').val() === '')
 		{
-			$('#mylocation-next').addClass('disabled').attr('disabled','disabled');
+			disable('mylocation-next');
 		}
 		
-	// Set up the timepicker - bootstrap-timepicker.js
+		// Set up the timepicker - bootstrap-timepicker.js
 		$('#time').timepicker(Default.TimepickerOptions);
 		
 		// Set up the loading message
-		//$('#loading').hide();
 		$(document).ajaxStart(function() {
-			//$('#loading').show();
 			MySpinner.spin(Default.spinnerTarget);
 		})
 		.ajaxStop(function() {
-			//$('#loading').hide();
 			MySpinner.stop();
 		});
 		
@@ -928,59 +905,49 @@
 		PanZoomControlDiv.index = 1;
 		Application.Map.Map.controls[google.maps.ControlPosition.TOP_RIGHT].push(PanZoomControlDiv);
 		
-		if(Application.scheduledatacolumns === null || Application.scheduledatarows === null)
+		if(ScheduleFT.columns === null || ScheduleFT.rows === null)
 		{
-			// The School Schedule FT query
-			var ScheduleFT = new FusionTable();
-			ScheduleFT.query = encodeURIComponent(Default.schoolschedulequery);
-			
-			// Construct the School Location URL
-			ScheduleFT.populateUrl(Default.fturl,ScheduleFT.query,Default.googlemapsapikey);
-			
 			$.ajax({
-				url: ScheduleFT.url.join(''),
+				url: ScheduleFT.url,
 				dataType: 'jsonp',
 				success: function (ftdata) {
+					ScheduleFT.columns = ftdata.columns;
+					ScheduleFT.rows = ftdata.rows;
 					if(localStorage)
 					{
-						$.jStorage.set(Default.storagePrefix+'scheduledatacolumns',ftdata.columns);
-						$.jStorage.set(Default.storagePrefix+'scheduledatarows',ftdata.rows);
+						$.jStorage.set(Default.storagePrefix+'scheduleftcolumns',ScheduleFT.columns);
+						$.jStorage.set(Default.storagePrefix+'scheduleftrows',ScheduleFT.rows);
 					}
-					getSchedule(ftdata.columns,ftdata.rows);
+					getSchedule(ScheduleFT.columns,ScheduleFT.rows);
 				}
 			});
 		}
 		else
 		{
-			getSchedule(Application.scheduledatacolumns,Application.scheduledatarows);
+			getSchedule(ScheduleFT.columns,ScheduleFT.rows);
 		}
 		
-		if(Application.schooldatacolumns === null || Application.schooldatarows === null)
+		if(SchoolFT.columns === null || SchoolFT.rows === null)
 		{
-			// The School Location FT query
-			var SchoolFT = new FusionTable();
-			SchoolFT.query = encodeURIComponent(Default.schoollocationquery);
-			
-			// Construct the School Location URL
-			SchoolFT.populateUrl(Default.fturl,SchoolFT.query,Default.googlemapsapikey);
-			
 			// Get the School Location FT data!
 			$.ajax({
-				url: SchoolFT.url.join(''),
+				url: SchoolFT.url,
 				dataType: 'jsonp',
 				success: function (ftdata) {
+					SchoolFT.columns = ftdata.columns;
+					SchoolFT.rows = ftdata.rows;
 					if(localStorage)
 					{
-						$.jStorage.set(Default.storagePrefix+'schooldatacolumns',ftdata.columns);
-						$.jStorage.set(Default.storagePrefix+'schooldatarows',ftdata.rows);
+						$.jStorage.set(Default.storagePrefix+'schoolftcolumns',SchoolFT.columns);
+						$.jStorage.set(Default.storagePrefix+'schoolftrows',SchoolFT.rows);
 					}
-					getSchools(ftdata.columns,ftdata.rows);
+					getSchools(SchoolFT.columns,SchoolFT.rows);
 				}
 			});
 		}
 		else
 		{
-			getSchools(Application.schooldatacolumns,Application.schooldatarows);
+			getSchools(SchoolFT.columns,SchoolFT.rows);
 		}
 		
 		// Is this dev?
@@ -1276,7 +1243,6 @@
 		$('#summary-mylocation-btn').click(summarybtn('mylocation'));
 		
 		// GO! BUTTON
-		
 		$('#summary-go').click(function(){
 			route();
 		});
