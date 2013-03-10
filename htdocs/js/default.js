@@ -1,7 +1,4 @@
-/**
- * Default settings for this application
- * @type object
- */
+// Default settings for this application
 var Default = {
 	// City name passed to Google for geolocation
 	city:'Chicago',
