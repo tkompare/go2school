@@ -338,7 +338,7 @@
 			controlDiv.style.padding = '1em';
 			// Set CSS for the control border.
 			var controlUI = document.createElement('div');
-			controlUI.style.backgroundColor = '#000080';
+			controlUI.style.backgroundColor = '#015289';
 			controlUI.style.color = 'white';
 			controlUI.style.borderStyle = 'solid';
 			controlUI.style.borderWidth = '0px';
