@@ -32,7 +32,7 @@ var Default = {
 		zIndex: null,
 		boxStyle: {
 			background: "url('img/tipbox.gif') no-repeat",
-			opacity: 0.9,
+			opacity: 0.92,
 			width: "160px"
 		},
 		closeBoxMargin: "11px 4px 4px 4px",

@@ -146,7 +146,7 @@
 				});
 				// Info boxes
 				var phone = String(Application.Schools[i].data.phone).replace('/[^0-9]/','');
-				Application.Schools[i].infoboxtext = '<div class="infoBox" style="border:2px solid rgb(0,0,0); margin-top:8px; background:rgb(1,82,137); padding:5px; color:white; font-size:80%;">'+
+				Application.Schools[i].infoboxtext = '<div class="infoBox" style="border:2px solid rgb(0,0,0); margin-top:8px; background:rgb(1,82,137); padding:5px; color:white; font-size:90%;">'+
 				Application.Schools[i].data.longname+'<br />'+
 				Application.Schools[i].data.address+'<br />'+
 				phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'<br /></div>';
