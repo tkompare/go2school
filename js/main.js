@@ -369,7 +369,7 @@
 					}
 					$('#before-map,#div-footer,#grp-directions').hide(750,function(){
 						$('#map-width').css('height','100%');
-						$('#map-ratio').css('margin-top', window.innerHeight);
+						$('#map-ratio').css('margin-top', $(window).height());
 						controlUI.title = 'Click to close up the map.';
 						controlText.innerHTML = 'Minimize';
 						Application.Map.Map.setCenter(cntr);
