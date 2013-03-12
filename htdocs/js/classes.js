@@ -58,6 +58,8 @@ var GoToSchool = (function(){
 		this.today = null;
 		// Tomorrow's Date mm/dd/yyyy
 		this.tomorrow = null;
+		// Is this a touch device? USES Modernizr.js
+		this.touch = Modernizr.touch;
 		// Google Maps API Traffic Layer
 		this.traffic = null;
 		// travel mode

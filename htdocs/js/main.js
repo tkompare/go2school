@@ -146,7 +146,7 @@
 				});
 				// Info boxes
 				var phone = String(Application.Schools[i].data.phone).replace('/[^0-9]/','');
-				Application.Schools[i].infoboxtext = '<div class="infoBox" style="border:2px solid rgb(0,0,0); margin-top:8px; background:rgb(25,25,112); padding:5px; color:white; font-size:80%;">'+
+				Application.Schools[i].infoboxtext = '<div class="infoBox" style="border:2px solid rgb(0,0,0); margin-top:8px; background:rgb(1,82,137); padding:5px; color:white; font-size:90%;">'+
 				Application.Schools[i].data.longname+'<br />'+
 				Application.Schools[i].data.address+'<br />'+
 				phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'<br /></div>';
@@ -339,8 +339,6 @@
 			// Set CSS for the control border.
 			var controlUI = document.createElement('div');
 			controlUI.style.backgroundColor = '#015289';
-			controlUI.style.backgroundImage = 'linear-gradient(to bottom, #015289, #012589)';
-			controlUI.style.backgroundRepeat = 'repeat-x';
 			controlUI.style.color = 'white';
 			controlUI.style.borderStyle = 'solid';
 			controlUI.style.borderWidth = '0px';
@@ -365,10 +363,13 @@
 				if(Application.Map.Map.zoomControl === false)
 				{
 					Application.Map.setPanZoom(true);
-					Application.Map.setTouchScroll(false);
+					if(Application.touch)
+					{
+						Application.Map.setTouchScroll(false);
+					}
 					$('#before-map,#div-footer,#grp-directions').hide(750,function(){
 						$('#map-width').css('height','100%');
-						$('#map-ratio').css('margin-top', window.innerHeight);
+						$('#map-ratio').css('margin-top', $(window).height());
 						controlUI.title = 'Click to close up the map.';
 						controlText.innerHTML = 'Minimize';
 						Application.Map.Map.setCenter(cntr);
@@ -382,7 +383,10 @@
 				else
 				{
 					Application.Map.setPanZoom(false);
-					Application.Map.setTouchScroll(true);
+					if(Application.touch)
+					{
+						Application.Map.setTouchScroll(true);
+					}
 					$('#before-map,#div-footer,#grp-directions').show(750,function(){
 						$('#map-width').css('height','');
 						$('#map-ratio').css('margin-top','200px');
@@ -666,7 +670,10 @@
 		
 		// Pan/Zoom
 		Application.Map.setPanZoom(false);
-		Application.Map.setTouchScroll(true);
+		if(Application.touch)
+		{
+			Application.Map.setTouchScroll(true);
+		}
 		var PanZoomControlDiv = document.createElement('div');
 		panZoomControl(PanZoomControlDiv);
 		PanZoomControlDiv.index = 1;
