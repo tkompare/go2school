@@ -365,7 +365,10 @@
 				if(Application.Map.Map.zoomControl === false)
 				{
 					Application.Map.setPanZoom(true);
-					Application.Map.setTouchScroll(false);
+					if(Application.touch)
+					{
+						Application.Map.setTouchScroll(false);
+					}
 					$('#before-map,#div-footer,#grp-directions').hide(750,function(){
 						$('#map-width').css('height','100%');
 						$('#map-ratio').css('margin-top', window.innerHeight);
@@ -382,7 +385,10 @@
 				else
 				{
 					Application.Map.setPanZoom(false);
-					Application.Map.setTouchScroll(true);
+					if(Application.touch)
+					{
+						Application.Map.setTouchScroll(true);
+					}
 					$('#before-map,#div-footer,#grp-directions').show(750,function(){
 						$('#map-width').css('height','');
 						$('#map-ratio').css('margin-top','200px');
@@ -666,7 +672,10 @@
 		
 		// Pan/Zoom
 		Application.Map.setPanZoom(false);
-		Application.Map.setTouchScroll(true);
+		if(Application.touch)
+		{
+			Application.Map.setTouchScroll(true);
+		}
 		var PanZoomControlDiv = document.createElement('div');
 		panZoomControl(PanZoomControlDiv);
 		PanZoomControlDiv.index = 1;
