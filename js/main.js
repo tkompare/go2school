@@ -339,8 +339,6 @@
 			// Set CSS for the control border.
 			var controlUI = document.createElement('div');
 			controlUI.style.backgroundColor = '#015289';
-			controlUI.style.backgroundImage = 'linear-gradient(to bottom, #015289, #012589)';
-			controlUI.style.backgroundRepeat = 'repeat-x';
 			controlUI.style.color = 'white';
 			controlUI.style.borderStyle = 'solid';
 			controlUI.style.borderWidth = '0px';
