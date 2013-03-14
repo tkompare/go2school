@@ -629,7 +629,7 @@
 		// Disable next buttons when form fields are empty
 		function disable(domid){
 			$('#'+domid).addClass('disabled').attr('disabled','disabled');
-		};
+		}
 		if($('#school').val() === '')
 		{
 			disable('school-next');
@@ -796,7 +796,7 @@
 		}
 		
 		// Today Button Listener
-		$('.date').on('click', function() {
+		$('button.date').on('click', function() {
 			if(Application.localStorage)
 			{
 				$.jStorage.set(Default.storagePrefix+'date', $(this).val());
@@ -871,7 +871,7 @@
 		});
 		
 		// travel change
-		$('.travel').on('click', function() {
+		$('button.travel').on('click', function() {
 			Application.travelmode = $(this).val();
 			if(Application.localStorage)
 			{
@@ -989,7 +989,7 @@
 				$('#grp-summary,#isschool').hide();
 				$('#grp-'+grp).show();
 				$('#grp-directions').html('');
-				$('grp-directions').removeClass('center padded');
+				$('#grp-directions').removeClass('center padded');
 				if(Application.traffic !== null)
 				{
 					Application.traffic.setMap(null);
@@ -1018,6 +1018,7 @@
 		
 		// GO! BUTTON
 		$('#summary-go').click(function(){
+			_gaq.push(['_trackEvent', 'Route', 'Click', Application.SchoolSelected.data.longname]);
 			route();
 		});
 
