@@ -60,22 +60,28 @@
 				<!-- <span id=loading class=label>Loading Data...</span> -->
 			</div>
 			<div id=grp-time class=margin2>
-				<h4 class=center>When do you want to arrive?</h4>
-				<div id=date-btns class=padded data-toggle=buttons-radio>
-					<span class=span6><button id=date-today name=date value=today class="btn btn-large btn-primary btn-block date"><span id=date-today-icon></span>Today</button></span>
-					<span class=span6><button id=date-tomorrow name=date value=tomorrow class="btn btn-large btn-primary btn-block date"><span id=date-tomorrow-icon></span>Tomorrow</button></span>
+				<div><h4 class=center>When do you want to arrive?</h4></div>
+				<div id=date-btns data-toggle=buttons-radio>
+					<span class="span12 padded">
+						<button id=date-today name=date value=today class="span6 btn btn-large btn-primary date"><span id=date-today-icon></span>Today</button>
+						<button id=date-tomorrow name=date value=tomorrow class="span6 btn btn-large btn-primary date"><span id=date-tomorrow-icon></span>Tomorrow</button>
+					</span>
 					<br><br>
 				</div>
-				<div id=time-btns class=padded data-toggle=buttons-radio>
-					<span class=span6><button id=time-start name=time value=start class="btn btn-large btn-warning btn-block"><span id=time-start-icon></span>Start of school<span id=time-start-time></span></button></span>
-					<span class=span6><button id=time-end name=time value=end class="btn btn-large btn-warning btn-block"><span id=time-end-icon></span>End of school<span id=time-end-time></span></button></span>
-					<br>
+				<div id=time-btns data-toggle=buttons-radio>
+					<span class="span12 padded">
+						<button id=time-start name=time value=start class="span6 btn btn-large btn-warning"><span id=time-start-icon></span>Start of school<span id=time-start-time></span></button>
+						<button id=time-end name=time value=end class="span6 btn btn-large btn-warning"><span id=time-end-icon></span>End of school<span id=time-end-time></span></button>
+					</span>
+					<br><br>
 				</div>
-				<div id=timepicker class="center padded">
-					<label class="control-label" for="time"><b>Choose your own time</b></label>
+				<div id=timepicker>
+				<div class="center padded">
+					<div><b>Choose your own time</b></div>
 					<div class="bootstrap-timepicker">
 						<input id="time" type="text" class="span6"/>
 					</div>
+				</div>
 				</div>
 				<div class="center margin2">
 					<button id=time-back class="btn btn-large btn-primary">Back</button>
