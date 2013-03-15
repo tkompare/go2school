@@ -54,6 +54,8 @@ var Default = {
 	schoolschedulequery:'SELECT date, dayofweek, unifiedcalendar FROM 1u765vIMSPecSEinBe1H6JPYSFE5ljbAW1Mq3okc',
 	// Google Fusion Tables SQL-like query string for school location data
 	schoollocationquery:'SELECT lat, lng, longname, address, postalcode, phone, start, end FROM 1qCOcgrhGwjt6bdx_UVPSkyIMMVD-1C7CJFvpIjI',
+	// Google Fusion Tables SQL-like query string for safe location data
+	safelocationquery:'SELECT lat, lng, name, address, postalcode, phone, type FROM 1I-edYtBu3Dvx_Ng08Gw_GVrPfwa187KGUegsZUc',
 	// spin.js Spinner Options
 	spinnerOpts:{
 		lines: 13, // The number of lines to draw

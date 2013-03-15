@@ -46,6 +46,8 @@ var GoToSchool = (function(){
 			LatLng:null,
 			address:null
 		};
+		// Holds the array of safe locations
+		this.SafeLocations = [];
 		// Holds the array of schedule (date) information
 		this.Schedules = [];
 		// List of school names for the typeahead drop-down
@@ -64,6 +66,35 @@ var GoToSchool = (function(){
 		this.traffic = null;
 		// travel mode
 		this.travelmode = null;
+	};
+	return constructor;
+})();
+
+/**
+ * Map Location class
+ */
+var MapLocation = (function(){
+	var constructor = function()
+	{
+		this.data = {};
+		this.latlng = null;
+		this.marker = null;
+		this.infobox = null;
+		this.infoboxtext = null;
+		
+		this.toggleInfoBox = function(Map,Marker,InfoBox)
+		{
+			return function(){
+				if(InfoBox.visible)
+				{
+					InfoBox.close(Map,Marker);
+				}
+				else
+				{
+					InfoBox.open(Map,Marker);
+				}
+			};
+		};
 	};
 	return constructor;
 })();

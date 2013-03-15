@@ -183,6 +183,69 @@
 			window.scrollTo(0, 1);
 		}
 		
+		function getSafe(columns,rows)
+		{
+			// Copy the Safe Location data to the School object
+			for (var i in rows)
+			{
+				Application.SafeLocations[i] = new MapLocation();
+				for(var j in columns)
+				{
+					var colname = columns[j];
+					Application.SafeLocations[i].data[colname] = rows[i][j];
+				}
+				// Create the Google LatLng object
+				Application.SafeLocations[i].latlng = new google.maps.LatLng(Application.SafeLocations[i].data.lat,Application.SafeLocations[i].data.lng);
+				// Create the markers for each school
+				if(Application.SafeLocations[i].data.type === 'police station')
+				{
+					Application.SafeLocations[i].marker = new google.maps.Marker({
+						position: Application.SafeLocations[i].latlng,
+						map: Application.Map.Map,
+						icon:'img/police.png'
+					});
+				}
+				else if (Application.SafeLocations[i].data.type === 'fire station')
+				{
+					Application.SafeLocations[i].marker = new google.maps.Marker({
+						position: Application.SafeLocations[i].latlng,
+						map: Application.Map.Map,
+						icon:'img/fire.png'
+					});
+				}
+				else if (Application.SafeLocations[i].data.type === 'hospital')
+				{
+					Application.SafeLocations[i].marker = new google.maps.Marker({
+						position: Application.SafeLocations[i].latlng,
+						map: Application.Map.Map,
+						icon:'img/hosp.png'
+					});
+				}
+				else
+				{
+					Application.SafeLocations[i].marker = new google.maps.Marker({
+						position: Application.SafeLocations[i].latlng,
+						map: Application.Map.Map
+					});
+				}
+				// Info boxes
+				var phone = String(Application.SafeLocations[i].data.phone).replace(/[^0-9]/g,'');
+				Application.SafeLocations[i].infoboxtext = '<div class="infoBox" style="border:2px solid rgb(0,0,0); margin-top:8px; background:rgb(82,82,82); padding:5px; color:white; font-size:90%;">'+
+				Application.SafeLocations[i].data.name+'<br>'+
+				Application.SafeLocations[i].data.address+'<br>';
+				if(phone !== '')
+				{
+					Application.SafeLocations[i].infoboxtext = Application.SafeLocations[i].infoboxtext + phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'<br>';
+				}
+				Application.SafeLocations[i].infoboxtext = Application.SafeLocations[i].infoboxtext + '</div>';
+				var options = Default.infoboxoptions;
+				options.content = Application.SafeLocations[i].infoboxtext;
+				// Make the info box
+				Application.SafeLocations[i].infobox = new InfoBox(options);
+			}
+			window.scrollTo(0, 1);
+		}
+		
 		function getSchedule(columns,rows)
 		{
 			for (var i in rows)
@@ -379,6 +442,10 @@
 					{
 						google.maps.event.addListener(Application.Schools[i].marker, 'click', Application.Schools[i].toggleInfoBox(Application.Map.Map,Application.Schools[i].marker,Application.Schools[i].infobox));
 					}
+					for(var i in Application.SafeLocations)
+					{
+						google.maps.event.addListener(Application.SafeLocations[i].marker, 'click', Application.SafeLocations[i].toggleInfoBox(Application.Map.Map,Application.SafeLocations[i].marker,Application.SafeLocations[i].infobox));
+					}
 				}
 				else
 				{
@@ -399,6 +466,10 @@
 					for(var i in Application.Schools)
 					{
 						google.maps.event.clearListeners(Application.Schools[i].marker, 'click');
+					}
+					for(var i in Application.SafeLocations)
+					{
+						google.maps.event.clearListeners(Application.SafeLocations[i].marker, 'click');
 					}
 				}
 			});
@@ -567,6 +638,7 @@
 		var storageTravel = '';
 		var ScheduleFT = new FusionTable(Default.fturl,Default.schoolschedulequery,Default.googlemapsapikey);
 		var SchoolFT = new FusionTable(Default.fturl,Default.schoollocationquery,Default.googlemapsapikey);
+		var SafeFT = new FusionTable(Default.fturl,Default.safelocationquery,Default.googlemapsapikey);
 		if(Application.localStorage)
 		{
 			$('#school').val($.jStorage.get(Default.storagePrefix+'school',''));
@@ -581,6 +653,8 @@
 			ScheduleFT.rows = $.jStorage.get(Default.storagePrefix+'scheduleftrows',null);
 			SchoolFT.columns = $.jStorage.get(Default.storagePrefix+'schoolftcolumns',null);
 			SchoolFT.rows = $.jStorage.get(Default.storagePrefix+'schoolftrows',null);
+			SafeFT.columns = $.jStorage.get(Default.storagePrefix+'safeftcolumns',null);
+			SafeFT.rows = $.jStorage.get(Default.storagePrefix+'safeftrows',null);
 			
 			// Apply the date; today or tomorrow?
 			if(storageDate === 'today')
@@ -722,6 +796,29 @@
 		else
 		{
 			getSchools(SchoolFT.columns,SchoolFT.rows);
+		}
+		
+		if(SafeFT.columns === null || SafeFT.rows === null)
+		{
+			// Get the School Location FT data!
+			$.ajax({
+				url: SafeFT.url,
+				dataType: 'jsonp',
+				success: function (ftdata) {
+					SafeFT.columns = ftdata.columns;
+					SafeFT.rows = ftdata.rows;
+					if(Application.localStorage)
+					{
+						$.jStorage.set(Default.storagePrefix+'safeftcolumns',SafeFT.columns);
+						$.jStorage.set(Default.storagePrefix+'safeftrows',SafeFT.rows);
+					}
+					getSafe(SafeFT.columns,SafeFT.rows);
+				}
+			});
+		}
+		else
+		{
+			getSafe(SafeFT.columns,SafeFT.rows);
 		}
 		
 		// Is this dev?
