@@ -6,7 +6,7 @@ var Default = {
 	check:'<i class="icon-ok icon-white"></i> ',
 	// Google DirectionsRenderer options
 	DirectionsOptions:{
-		draggable:false,
+		draggable:true,
 		markerOptions:{
 			zIndex:20000000
 		},
