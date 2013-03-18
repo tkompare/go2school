@@ -13,6 +13,7 @@
 <link href="css/bootstrap-responsive.min.css" rel=stylesheet>
 <link href="css/bootstrap-timepicker.min.css" rel=stylesheet>
 <style type=text/css>
+	.adp-listsel{background-color:#d9edf7;border-radius:6px}
 	body {padding-top:0px;padding-bottom:0px;padding-left:0px;padding-right:0px}
 	body,#the-map{background-color:#333}
 	#div-footer a{color:orange}
@@ -63,7 +64,7 @@
 				<!-- <span id=loading class=label>Loading Data...</span> -->
 			</div>
 			<div id=grp-time class="center padded margin2">
-				<h4>When do you want to arrive?</h4>
+				<h4>When do you want to arrive?&nbsp;&nbsp;<button id=leaverightnow class="btn btn-link btn-small" type=button>Leave Right Now</button></h4>
 				<div class="span12 margin2" style="margin-left:0px">
 					<div id=date-btns class="span6 btn-group btn-group-vertical" data-toggle=buttons-radio>
 						<button id=date-today name=date value=today class="btn btn-large btn-block btn-primary date"><span id=date-today-icon></span>Today</button>
@@ -71,8 +72,11 @@
 					</div>
 					<div id="interbutton"></div>
 					<div id=time-btns class="span6 btn-group btn-group-vertical" data-toggle=buttons-radio>
-						<button id=time-start name=time value=start class="btn btn-large btn-block btn-warning"><span id=time-start-icon></span>Start of school<span id=time-start-time></span></button>
-						<button id=time-end name=time value=end class="btn btn-large btn-block btn-warning"><span id=time-end-icon></span>End of school<span id=time-end-time></span></button>
+						<button id=time-start name=time value=start class="btn btn-large btn-block btn-warning time"><span id=time-start-icon></span>Start of school<span id=time-start-time></span></button>
+						<button id=time-end name=time value=end class="btn btn-large btn-block btn-warning time"><span id=time-end-icon></span>End of school<span id=time-end-time></span></button>
+					</div>
+					<div id ="time-nobtns" class=span6>
+						<p>No start or end time available. Please choose your arival time below.</p>
 					</div>
 				</div>
 				<div id=timepicker>
@@ -118,7 +122,7 @@
 				<div class="span8 offset2 margin2">
 				<table class="table">
 					<tr><td><b>Name of School:</b></td><td><span id=summary-school></span><button id=summary-school-btn class="btn btn-mini pull-right" type="button">Edit</button></td></tr>
-					<tr><td><b>Time to Arrive:</b></td><td><span id=summary-time></span> - <span id=summary-date></span><button id=summary-time-btn class="btn btn-mini pull-right" type="button">Edit</button></td></tr>
+					<tr><td><b>Time to Arrive:</b></td><td><span id=summary-datetime><span id=summary-time></span> - <span id=summary-date></span></span><span id=summary-leaverightnow>Leave Right Now</span><button id=summary-time-btn class="btn btn-mini pull-right" type="button">Edit</button></td></tr>
 					<tr><td><b>Travel Mode:</b></td><td><span id=summary-travel></span><button id=summary-travel-btn class="btn btn-mini pull-right" type="button">Edit</button></td></tr>
 					<tr><td><b>Leaving From:</b></td><td><span id=summary-mylocation></span><button id=summary-mylocation-btn class="btn btn-mini pull-right" type="button">Edit</button></td></tr>
 					<tr><td><b>Sick?</b></td><td><span id=sick-tel-summary></span></td><td></td>

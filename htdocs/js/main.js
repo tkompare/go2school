@@ -51,11 +51,22 @@
 				{
 					if(Application.Schools[i].data.longname === Application.SchoolSelected.data.longname)
 					{
-						//$('#time-start-icon,#time-end-icon').text('');
 						Application.Map.Map.setCenter(Application.Schools[i].latlng);
 						Application.Schools[i].infobox.open(Application.Map.Map,Application.Schools[i].marker);
-						var startTime = formattime(Application.SchoolSelected.data.start);
-						var endTime = formattime(Application.SchoolSelected.data.end);
+						var startTime = '12:00 PM';
+						if(Application.SchoolSelected.data.start.length > 0)
+						{
+							startTime = formattime(Application.SchoolSelected.data.start);
+						}
+						var endTime = '12:00 PM';
+						if(Application.SchoolSelected.data.end.length > 0)
+						{
+							endTime = formattime(Application.SchoolSelected.data.end);
+						}
+						else
+						{
+							$('#time,#summary-time').val('12:00 PM');
+						}
 						// Set button time span text
 						$('#time-start-time').text(' - '+startTime);
 						$('#time-end-time').text(' - '+endTime);
@@ -244,6 +255,30 @@
 				Application.SafeLocations[i].infobox = new InfoBox(options);
 			}
 			window.scrollTo(0, 1);
+			
+			google.maps.event.addListener(Application.Map.Map, 'zoom_changed', function() {
+				if(Application.Map.Map.getZoom() > 13)
+				{
+					for(var i in Application.SafeLocations)
+					{
+						if(Application.SafeLocations[i].marker.getVisible() === false)
+						{
+							Application.SafeLocations[i].marker.setVisible(true);
+						}
+					}
+				}
+				else
+				{
+					for(var i in Application.SafeLocations)
+					{
+						if(Application.SafeLocations[i].marker.getVisible() === true)
+						{
+							Application.SafeLocations[i].marker.setVisible(false);
+						}
+					}
+				}
+				
+			});
 		}
 		
 		function getSchedule(columns,rows)
@@ -484,6 +519,18 @@
 					Application.SchoolSelected = Schools[i];
 					$('#summary-school').text(Schools[i].data.longname);
 					$('#school').val(Schools[i].data.longname);
+					console.log(Application.SchoolSelected.data.start.length);
+					if(Application.SchoolSelected.data.start.length > 0)
+					{
+						$('#time-nobtns').hide();
+						$('#time.btns').show();
+					}
+					else
+					{
+						$('#time-btns').hide();
+						$('#time.nobtns').show();
+						$('#time,#summary-time').val('12:00 PM');
+					}
 					var phone = String(Schools[i].data.phone).replace('/[^0-9]/','');
 					$('#sick-tel,#sick-tel-summary').text('Call: '+phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4));
 					$('#sick').show();
@@ -525,10 +572,15 @@
 			{
 				unixtime = Date.parse(Application.tomorrow+' '+userTime).getTime();
 			}
-			var transitOptions = {
-				// subtract 10 minutes so the user has a bit of a real-life buffer.
-				arrivalTime : new Date(unixtime - 600000)
-			};
+			var transitOptions = {};
+			console.log(Application.leaverightnow);
+			if(Application.leaverightnow === false)
+			{
+				transitOptions = {
+					// subtract 10 minutes so the user has a bit of a real-life buffer.
+					arrivalTime : new Date(unixtime - 600000)
+				};
+			}
 			var RouteRequest = {
 				origin : $('#mylocation').val()+', ' + Default.city + ', ' + Default.state,
 				destination : Application.SchoolSelected.data.address+', '+Default.city+', '+Default.state+' '+Application.SchoolSelected.data.postalcode,
@@ -551,24 +603,29 @@
 				{
 					if (Status === google.maps.DirectionsStatus.OK)
 					{
-						$('#grp-directions').html('<div id=timetoleave class="span12 center"></div><div id=directions class="span8 offset2"></div>');
+						if(Application.leaverightnow === true)
+						{
+							$('#grp-directions').html('<div class="span12 center"><h4>Leave by <span id=timetoleave></span></h4><p><small>Click any suggested route below to see alternate directions.</small><p></div><div id=directions class="span8 offset2"></div>');
+						}
+						else
+						{
+							$('#grp-directions').html('<div class="span12 center"><h4>Leave '+$('#summary-date').text()+' by <span id=timetoleave></span></h4><p><small>Click any suggested route below to see alternate directions.</small><p></div><div id=directions class="span8 offset2"></div>');
+						}
 						$('#grp-directions').addClass('padded');
 						$('#grp-directions').show();
 						Application.DirectionsRenderer.setMap(Application.Map.Map);
 						Application.DirectionsRenderer.setPanel(document.getElementById('directions'));
-						var route = 0;
-						for(var i=0; i<Response.routes.length; i++)
+						var leg = 0;
+						for(var i=0; i<Response.routes[0].legs.length; i++)
 						{
-							for(var j=0; j<Response.routes[i].legs[0].steps.length; j++)
+							for(var j=0; j<Response.routes[0].legs[i].steps.length; j++)
 							{
-								if(Response.routes[i].legs[0].steps[j].travel_mode === Application.travelmode)
+								if(Response.routes[0].legs[i].steps[j].travel_mode === Application.travelmode)
 								{
-									route = i;
+									leg = i;
 									break;
 								}
 							}
-							delete Response.routes[i].warnings;
-							Response.routes[i].copyrights = '';
 						}
 						for(var i in Application.Schools)
 						{
@@ -577,75 +634,24 @@
 						Application.DirectionsRenderer.setDirections(Response);
 						if(Application.travelmode === 'TRANSIT')
 						{
-							$('#timetoleave').html('<h4>Leave '+$('#summary-date').text()+' by '+Response.routes[route].legs[0].departure_time.text+'</h4>');
+							$('#timetoleave').html(Response.routes[0].legs[leg].departure_time.text);
 						}
 						else
 						{
-							var travelhours = 0;
-							var travelminutes = Application.DirectionsRenderer.directions.routes[0].legs[0].duration.text.match(/([0-9]+) min/)[1];
-							if(Application.DirectionsRenderer.directions.routes[0].legs[0].duration.text.match(/([0-9]+) h/))
-							{
-								travelhours = Application.DirectionsRenderer.directions.routes[0].legs[0].duration.text.match(/([0-9]+) h/)[1];
-							}
-							var milleseconds = ((parseInt(travelhours) * 60) + parseInt(travelminutes)) * 60000;
-							// Subtract 10 minutes so no one is late.
-							var unixtimeLeaveBy = unixtime - milleseconds - 600000;
-							var LeaveByDate = new Date(unixtimeLeaveBy);
-							var ampm = 'AM';
-							var hour = LeaveByDate.getHours();
-							if (hour > 11)
-							{
-								hour = hour - 12;
-								ampm = 'PM';
-							}
-							else if(hour < 1)
-							{
-								hour = 12;
-							}
-							var minute = LeaveByDate.getMinutes();
-							if(String(minute).length === 1)
-							{
-								minute = '0'+minute;
-							}
-							else if(String(minute).length === 0)
-							{
-								minute = '00';
-							}
-							var leaveByDateString = hour+':'+minute+' '+ampm;
-							$('#timetoleave').html('<h4>Leave '+$('#summary-date').text()+' by '+leaveByDateString+'</h4>');
-						}
-						if(Application.travelmode === 'TRANSIT' || Application.travelmode === 'DRIVING')
-						{
-							if(Application.traffic === null)
-							{
-								Application.traffic = new google.maps.TrafficLayer();
-							}
-							Application.traffic.setMap(Application.Map.Map);
-						}
-						else
-						{
-							if(Application.traffic !== null)
-							{
-								Application.traffic.setMap(null);
-							}
-						}
-						google.maps.event.addListener(Application.DirectionsRenderer, 'routeindex_changed', function() {
-							if(Application.travelmode === 'TRANSIT')
-							{
-								$('#timetoleave').html('<h4>Leave '+$('#summary-date').text()+' by '+Application.DirectionsRenderer.directions.routes[this.routeIndex].legs[0].departure_time.text+'</h4>');
-							}
-							else
-							{
 								var travelhours = 0;
-								var travelminutes = Application.DirectionsRenderer.directions.routes[this.routeIndex].legs[0].duration.text.match(/([0-9]+) min/)[1];
-								if(Application.DirectionsRenderer.directions.routes[this.routeIndex].legs[0].duration.text.match(/([0-9]+) h/))
+								var travelminutes = Application.DirectionsRenderer.directions.routes[0].legs[0].duration.text.match(/([0-9]+) min/)[1];
+								if(Application.DirectionsRenderer.directions.routes[0].legs[0].duration.text.match(/([0-9]+) h/))
 								{
-									travelhours = Application.DirectionsRenderer.directions.routes[this.routeIndex].legs[0].duration.text.match(/([0-9]+) h/)[1];
+									travelhours = Application.DirectionsRenderer.directions.routes[0].legs[0].duration.text.match(/([0-9]+) h/)[1];
 								}
 								var milleseconds = ((parseInt(travelhours) * 60) + parseInt(travelminutes)) * 60000;
 								// Subtract 10 minutes so no one is late.
-								var unixtimeLeaveBy = unixtime - milleseconds  - 600000;
-								var LeaveByDate = new Date(unixtimeLeaveBy);
+								var unixtimeLeaveBy = unixtime - milleseconds - 600000;
+								var LeaveByDate = new Date();
+								if(Application.leaverightnow === false)
+								{
+									LeaveByDate = new Date(unixtimeLeaveBy);
+								}
 								var ampm = 'AM';
 								var hour = LeaveByDate.getHours();
 								if (hour > 11)
@@ -667,7 +673,66 @@
 									minute = '00';
 								}
 								var leaveByDateString = hour+':'+minute+' '+ampm;
-								$('#timetoleave').html('<h4>Leave '+$('#summary-date').text()+' by '+leaveByDateString+'</h4>');
+								$('#timetoleave').html(leaveByDateString);
+						}
+						if((Application.travelmode === 'TRANSIT' || Application.travelmode === 'DRIVING') && Application.leaverightnow === true)
+						{
+							if(Application.traffic === null)
+							{
+								Application.traffic = new google.maps.TrafficLayer();
+							}
+							Application.traffic.setMap(Application.Map.Map);
+						}
+						else
+						{
+							if(Application.traffic !== null)
+							{
+								Application.traffic.setMap(null);
+							}
+						}
+						google.maps.event.addListener(Application.DirectionsRenderer, 'routeindex_changed', function() {
+							if(Application.travelmode === 'TRANSIT')
+							{
+								$('#timetoleave').html(Application.DirectionsRenderer.directions.routes[this.routeIndex].legs[0].departure_time.text);
+							}
+							else
+							{
+								var travelhours = 0;
+								var travelminutes = Application.DirectionsRenderer.directions.routes[this.routeIndex].legs[0].duration.text.match(/([0-9]+) min/)[1];
+								if(Application.DirectionsRenderer.directions.routes[this.routeIndex].legs[0].duration.text.match(/([0-9]+) h/))
+								{
+									travelhours = Application.DirectionsRenderer.directions.routes[this.routeIndex].legs[0].duration.text.match(/([0-9]+) h/)[1];
+								}
+								var milleseconds = ((parseInt(travelhours) * 60) + parseInt(travelminutes)) * 60000;
+								// Subtract 10 minutes so no one is late.
+								var unixtimeLeaveBy = unixtime - milleseconds  - 600000;
+								var LeaveByDate = new Date();
+								if(Application.leaverightnow === false)
+								{
+									LeaveByDate = new Date(unixtimeLeaveBy);
+								}
+								var ampm = 'AM';
+								var hour = LeaveByDate.getHours();
+								if (hour > 11)
+								{
+									hour = hour - 12;
+									ampm = 'PM';
+								}
+								else if(hour < 1)
+								{
+									hour = 12;
+								}
+								var minute = LeaveByDate.getMinutes();
+								if(String(minute).length === 1)
+								{
+									minute = '0'+minute;
+								}
+								else if(String(minute).length === 0)
+								{
+									minute = '00';
+								}
+								var leaveByDateString = hour+':'+minute+' '+ampm;
+								$('#timetoleave').html(leaveByDateString);
 							}
 						});
 						google.maps.event.addListener(Application.DirectionsRenderer, 'directions_changed', function() {
@@ -736,6 +801,7 @@
 			$('#school').val($.jStorage.get(Default.storagePrefix+'school',''));
 			$('#summary-school').text($.jStorage.get(Default.storagePrefix+'school',''));
 			$('#time').val($.jStorage.get(Default.storagePrefix+'time',''));
+			Application.leaverightnow  = $.jStorage.get(Default.storagePrefix+'leaverightnow',false);
 			$('#summary-time').text($.jStorage.get(Default.storagePrefix+'time',''));
 			$('#mylocation').val($.jStorage.get(Default.storagePrefix+'mylocation',''));
 			$('#summary-mylocation').text($.jStorage.get(Default.storagePrefix+'mylocation',''));
@@ -760,6 +826,18 @@
 				$('#date-tomorrow').addClass('active');
 				$('#summary-date').text('Tomorrow');
 				$('#date-tomorrow-icon').html(Default.check);
+			}
+			
+			// Leave right now?
+			if(Application.leaverightnow === true)
+			{
+				$('#summary-datetime').hide();
+				$('#summary-leaverightnow').show();
+			}
+			else
+			{
+				$('#summary-leaverightnow').hide();
+				$('#summary-datetime').show();
 			}
 			
 			// Apply the travel type
@@ -787,7 +865,7 @@
 		}
 		
 		// If the form is completely filled out, go straight to the summary view
-		if($('#school').val() !== '' && $('#time').val() !== '' && storageDate !== '' && $('#mylocation').val() !== '' && storageTravel !== '')
+		if($('#school').val() !== '' && ($('#time').val() !== '' || Application.leaverightnow === true) && storageDate !== '' && $('#mylocation').val() !== '' && storageTravel !== '')
 		{
 			$('#grp-intro').hide();
 			$('#grp-summary').show();
@@ -929,6 +1007,9 @@
 		
 		// school input change
 		$('#school').change(function(){
+			$('#time-next').addClass('disabled').attr('disabled','disabled');
+			$('#time-start-icon,#time-end-icon').html('');
+			$('#time-start,#time-end').removeClass('active');
 			$('#summary-school').text($('#school').val());
 			if(Application.localStorage)
 			{
@@ -940,6 +1021,16 @@
 				if(Application.Schools[i].data.longname === $('#school').val())
 				{
 					Application.SchoolSelected = Application.Schools[i];
+					if(Application.SchoolSelected.data.start.length > 0)
+					{
+						$('#time-nobtns').hide();
+						$('#time-btns').show();
+					}
+					else
+					{
+						$('#time-btns').hide();
+						$('#time-nobtns').show();
+					}
 					var phone = String(Application.Schools[i].data.phone).replace('/[^0-9]/','');
 					$('#sick-tel,#sick-tel-summary').text('Call: '+phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4));
 					$('#sick').show();
@@ -974,6 +1065,20 @@
 				$('#school-next').addClass('disabled').attr('disabled','disabled');
 			}
 			centeronschool();
+		});
+		
+		// Leave right now
+		$('#leaverightnow').click(function(){
+			Application.leaverightnow = true;
+			if(Application.localStorage)
+			{
+				$.jStorage.set(Default.storagePrefix+'leaverightnow',true);
+			}
+			$('#summary-datetime').hide();
+			$('#summary-leaverightnow').show();
+			$('#grp-time').hide();
+			$('#grp-travel').show();
+			window.scrollTo(0, 1);
 		});
 		
 		// date-time screen function
@@ -1154,7 +1259,18 @@
 		$('#school-next').click(hideshow('school','time'));
 		
 		// time "next" button click
-		$('#time-next').click(hideshow('time','travel'));
+		$('#time-next').click(function(){
+			Application.leaverightnow = false;
+			if(Application.localStorage)
+			{
+				$.jStorage.set(Default.storagePrefix+'leaverightnow',false);
+			}
+			$('#summary-datetime').show();
+			$('#summary-leaverightnow').hide();
+			$('#grp-time').hide();
+			$('#grp-travel').show();
+			window.scrollTo(0, 1);
+		});
 		
 		// travel "next" button click
 		$('#travel-next').click(hideshow('travel','mylocation'));

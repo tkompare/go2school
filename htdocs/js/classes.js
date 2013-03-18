@@ -35,6 +35,8 @@ var GoToSchool = (function(){
 		this.DirectionsService = null;
 		// Oh dear lord, browser detection. -10 Charisma. Is the browser android or iPhone?
 		this.isPhone = (navigator.userAgent.match(/iPhone/i) || (navigator.userAgent.toLowerCase().indexOf("android") > -1)) ? true : false;
+		// Leave right now
+		this.leaverightnow = false;
 		// Is local browser storage available?
 		this.localStorage = $.jStorage.storageAvailable();
 		// The tkmap object
