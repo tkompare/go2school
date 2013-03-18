@@ -605,11 +605,11 @@
 					{
 						if(Application.leaverightnow === true)
 						{
-							$('#grp-directions').html('<div class="span12 center"><h4>Leave by <span id=timetoleave></span></h4><p><small>Click any suggested route below to see alternate directions.</small><p></div><div id=directions class="span8 offset2"></div>');
+							$('#grp-directions').html('<div class="span12 center"><h4>Leave by <span id=timetoleave></span></h4><p id=clickroutetext><small>Click any suggested route below to see alternate directions.</small><p></div><div id=directions class="span8 offset2"></div>');
 						}
 						else
 						{
-							$('#grp-directions').html('<div class="span12 center"><h4>Leave '+$('#summary-date').text()+' by <span id=timetoleave></span></h4><p><small>Click any suggested route below to see alternate directions.</small><p></div><div id=directions class="span8 offset2"></div>');
+							$('#grp-directions').html('<div class="span12 center"><h4>Leave '+$('#summary-date').text()+' by <span id=timetoleave></span></h4><p id=clickroutetext><small>Click any suggested route below to see alternate directions.</small><p></div><div id=directions class="span8 offset2"></div>');
 						}
 						$('#grp-directions').addClass('padded');
 						$('#grp-directions').show();
@@ -736,12 +736,6 @@
 							}
 						});
 						google.maps.event.addListener(Application.DirectionsRenderer, 'directions_changed', function() {
-							if(Application.travelmode === 'TRANSIT')
-							{
-								$('#timetoleave').html('<h4>Leave '+$('#summary-date').text()+' by '+Application.DirectionsRenderer.directions.routes[this.routeIndex].legs[0].departure_time.text+'</h4>');
-							}
-							else
-							{
 								var travelhours = 0;
 								var travelminutes = Application.DirectionsRenderer.directions.routes[this.routeIndex].legs[0].duration.text.match(/([0-9]+) min/)[1];
 								if(Application.DirectionsRenderer.directions.routes[this.routeIndex].legs[0].duration.text.match(/([0-9]+) h/))
@@ -751,7 +745,11 @@
 								var milleseconds = ((parseInt(travelhours) * 60) + parseInt(travelminutes)) * 60000;
 								// Subtract 10 minutes so no one is late.
 								var unixtimeLeaveBy = unixtime - milleseconds  - 600000;
-								var LeaveByDate = new Date(unixtimeLeaveBy);
+								var LeaveByDate = new Date();
+								if(Application.leaverightnow === false)
+								{
+									LeaveByDate = new Date(unixtimeLeaveBy);
+								}
 								var ampm = 'AM';
 								var hour = LeaveByDate.getHours();
 								if (hour > 11)
@@ -773,8 +771,8 @@
 									minute = '00';
 								}
 								var leaveByDateString = hour+':'+minute+' '+ampm;
-								$('#timetoleave').html('<h4>Leave '+$('#summary-date').text()+' by '+leaveByDateString+'</h4>');
-							}
+								$('#timetoleave').html(leaveByDateString);
+								$('#clickroutetext').hide();
 						});
 					}
 					else
