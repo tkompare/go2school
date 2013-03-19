@@ -57,6 +57,7 @@
 						if(Application.SchoolSelected.data.start.length > 0)
 						{
 							startTime = formattime(Application.SchoolSelected.data.start);
+							$('#time-nobtns').hide();
 						}
 						var endTime = '12:00 PM';
 						if(Application.SchoolSelected.data.end.length > 0)
