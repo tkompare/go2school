@@ -18,6 +18,14 @@
 		// Tomorrow's formatted date
 		var Tomorrow = new FormattedDate(TomorrowDate);
 		
+		// Two Days From Now date
+		var TwoDaysDate = new Date(TodayDate.getTime() + (86400000 * 2));
+		
+		// Two Days From Now formatted date
+		var TwoDays = new FormattedDate(TwoDaysDate);
+		
+		$('#twodaysname').text(TwoDays.day());
+		
 		// Spinner
 		var MySpinner = new Spinner(Default.spinnerOpts);
 		
@@ -150,18 +158,88 @@
 				// Create the Google LatLng object
 				Application.Schools[i].latlng = new google.maps.LatLng(Application.Schools[i].data.lat,Application.Schools[i].data.lng);
 				// Create the markers for each school
-				Application.Schools[i].marker = new google.maps.Marker({
-					position: Application.Schools[i].latlng,
-					map: Application.Map.Map,
-					icon:'img/orange.png',
-					shadow:'img/msmarker.shadow.png'
-				});
+				if (Application.Schools[i].data.closing == 'Closing')
+				{
+					Application.Schools[i].marker = new google.maps.Marker({
+						position: Application.Schools[i].latlng,
+						map: Application.Map.Map,
+						icon:'img/purple-dot.png',
+						shadow:'img/msmarker.shadow.png'
+					});
+				}
+				else if(Application.Schools[i].data.closing == 'Relocating')
+				{
+					Application.Schools[i].marker = new google.maps.Marker({
+						position: Application.Schools[i].latlng,
+						map: Application.Map.Map,
+						icon:'img/purple.png',
+						shadow:'img/msmarker.shadow.png'
+					});
+				}
+				else if(Application.Schools[i].data.closing == 'Co-locating')
+				{
+					Application.Schools[i].marker = new google.maps.Marker({
+						position: Application.Schools[i].latlng,
+						map: Application.Map.Map,
+						icon:'img/blue.png',
+						shadow:'img/msmarker.shadow.png'
+					});
+				}
+				else if(Application.Schools[i].data.closing == 'Turnaround')
+				{
+					Application.Schools[i].marker = new google.maps.Marker({
+						position: Application.Schools[i].latlng,
+						map: Application.Map.Map,
+						icon:'img/orange-dot.png',
+						shadow:'img/msmarker.shadow.png'
+					});
+				}
+				else
+				{
+					Application.Schools[i].marker = new google.maps.Marker({
+						position: Application.Schools[i].latlng,
+						map: Application.Map.Map,
+						icon:'img/orange.png',
+						shadow:'img/msmarker.shadow.png'
+					});
+				}
 				// Info boxes
 				var phone = String(Application.Schools[i].data.phone).replace('/[^0-9]/','');
-				Application.Schools[i].infoboxtext = '<div class="infoBox" style="border:2px solid rgb(0,0,0); margin-top:8px; background:rgb(1,82,137); padding:5px; color:white; font-size:90%;">'+
-				Application.Schools[i].data.longname+'<br />'+
-				Application.Schools[i].data.address+'<br />'+
-				phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'<br /></div>';
+				if(Application.Schools[i].data.closing === '')
+				{
+					Application.Schools[i].infoboxtext = '<div class="infoBox" style="border:2px solid rgb(0,0,0); margin-top:8px; background:rgb(1,82,137); padding:5px; color:white; font-size:90%;">'+
+					Application.Schools[i].data.longname+'<br>'+
+					Application.Schools[i].data.address+'<br>'+
+					phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'<br></div>';
+				}
+				else if(Application.Schools[i].data.closing === 'Closing')
+				{
+					Application.Schools[i].infoboxtext = '<div class="infoBox" style="border:2px solid rgb(0,0,0); margin-top:8px; background:rgb(82,1,137); padding:5px; color:white; font-size:90%;">'+
+					Application.Schools[i].data.longname+'<br>'+
+					Application.Schools[i].data.address+'<br>'+
+					phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'<br /><b>CLOSING</b><br><a style="color:#ffc" href="http://cps.edu/qualityschools/pages/schools.aspx" target="_blank">Click for more information</a></div>';
+				}
+				else if(Application.Schools[i].data.closing === 'Relocating')
+				{
+					Application.Schools[i].infoboxtext = '<div class="infoBox" style="border:2px solid rgb(0,0,0); margin-top:8px; background:rgb(82,1,137); padding:5px; color:white; font-size:90%;">'+
+					Application.Schools[i].data.longname+'<br>'+
+					Application.Schools[i].data.address+'<br>'+
+					phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'<br /><b>RELOCATING</b><br><a style="color:#ffc" href="http://cps.edu/qualityschools/pages/schools.aspx" target="_blank">Click for more information</a></div>';
+				}
+				else if(Application.Schools[i].data.closing === 'Co-locating')
+				{
+					Application.Schools[i].infoboxtext = '<div class="infoBox" style="border:2px solid rgb(0,0,0); margin-top:8px; background:rgb(102,178,255); padding:5px; color:black; font-size:90%;">'+
+					Application.Schools[i].data.longname+'<br>'+
+					Application.Schools[i].data.address+'<br>'+
+					phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'<br><b>CO-LOCATING</b><br><a href="http://cps.edu/qualityschools/pages/schools.aspx" target="_blank">Click for more information</a></div>';
+				}
+				else if(Application.Schools[i].data.closing === 'Turnaround')
+				{
+					Application.Schools[i].infoboxtext = '<div class="infoBox" style="border:2px solid rgb(0,0,0); margin-top:8px; background:rgb(1,82,137); padding:5px; color:white; font-size:90%;">'+
+					Application.Schools[i].data.longname+'<br>'+
+					Application.Schools[i].data.address+'<br>'+
+					phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'<br><b>TURNAROUND</b><br><a style="color:#ffc" href="http://cps.edu/qualityschools/pages/schools.aspx" target="_blank">Click for more information</a></div>';
+				}
 				var options = Default.infoboxoptions;
 				options.content = Application.Schools[i].infoboxtext;
 				// Make the info box
@@ -296,6 +374,7 @@
 			
 			Application.today = Today.month+'/'+Today.date+'/'+Today.year;
 			Application.tomorrow = Tomorrow.month+'/'+Tomorrow.date+'/'+Tomorrow.year;
+			Application.twodays = TwoDays.month+'/'+TwoDays.date+'/'+TwoDays.year;
 			
 			for(var i in Application.Schedules)
 			{
@@ -307,9 +386,14 @@
 				{
 					Default.schooltomorrow = Application.Schedules[i].data.unifiedcalendar;
 				}
+				else if(Application.Schedules[i].data.date === Application.twodays)
+				{
+					Default.schooltwodays = Application.Schedules[i].data.unifiedcalendar;
+				}
 			}
 			function checkSchedule(dateType,date,domId)
 			{
+			/*	
 				if(dateType === 'Full Day')
 				{
 					$('#'+domId).html(dateType+' '+date);
@@ -322,6 +406,7 @@
 				{
 					$('#'+domId).html(dateType+' '+date).addClass('text-warning');
 				}
+				*/
 			}
 			checkSchedule(Default.schooltoday,'Today','schedule');
 			checkSchedule(Default.schooltomorrow,'Tomorrow','schedule-tomorrow');
@@ -572,6 +657,11 @@
 			else if($('#summary-date').text() === 'Tomorrow')
 			{
 				unixtime = Date.parse(Application.tomorrow+' '+userTime).getTime();
+			}
+			else
+			{
+				console.log(Application.twodays);
+				unixtime = Date.parse(Application.twodays+' '+userTime).getTime();
 			}
 			var transitOptions = {};
 			console.log(Application.leaverightnow);
@@ -825,6 +915,12 @@
 				$('#date-tomorrow').addClass('active');
 				$('#summary-date').text('Tomorrow');
 				$('#date-tomorrow-icon').html(Default.check);
+			}
+			if(storageDate === 'twodays')
+			{
+				$('#date-twodays').addClass('active');
+				$('#summary-date').text(TwoDays.day());
+				$('#date-twodays-icon').html(Default.check);
 			}
 			
 			// Leave right now?
@@ -1098,13 +1194,19 @@
 			{
 				$('#summary-date').text('Today');
 				$('#date-today-icon').html(Default.check);
-				$('#date-tomorrow-icon').text('');
+				$('#date-tomorrow-icon,#date-twodays-icon').text('');
 			}
 			else if($(this).val() === 'tomorrow')
 			{
 				$('#summary-date').text('Tomorrow');
 				$('#date-tomorrow-icon').html(Default.check);
-				$('#date-today-icon').text('');
+				$('#date-today-icon,#date-twodays-icon').text('');
+			}
+			else if($(this).val() === 'twodays')
+			{
+			$('#summary-date').text(TwoDays.day());
+			$('#date-twodays-icon').html(Default.check);
+			$('#date-today-icon,#date-tomorrow-icon').text('');
 			}
 			dateTimeNext();
 		});

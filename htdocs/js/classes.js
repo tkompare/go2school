@@ -7,6 +7,22 @@ var FormattedDate = (function(){
 		this.month = date.getMonth()+1;
 		this.date = date.getDate();
 		this.year = date.getFullYear();
+		this.unformattedDate = date;
+		
+		this.day = function()
+		{
+			switch(this.unformattedDate.getDay())
+			{
+				case 0: return 'Sunday';
+				case 1: return 'Monday';
+				case 2: return 'Tuesday';
+				case 3: return 'Wednesday';
+				case 4: return 'Thursday';
+				case 5: return 'Friday';
+				case 6: return 'Saturday';
+				default: return 'Unknown';
+			}
+		};
 	};
 	return constructor;
 })();
@@ -64,6 +80,8 @@ var GoToSchool = (function(){
 		this.tomorrow = null;
 		// Is this a touch device? USES Modernizr.js
 		this.touch = Modernizr.touch;
+		// Two Days date mm/dd/yyyy
+		this.twodays = null;
 		// Google Maps API Traffic Layer
 		this.traffic = null;
 		// travel mode
