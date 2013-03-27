@@ -122,6 +122,8 @@
 							$('#time-end-icon').text('');
 							$('#time-end').removeClass('active');
 						}
+						
+						// Show phone number of school
 						var phone = String(Application.Schools[i].data.phone).replace('/[^0-9]/','');
 						if(Application.isPhone)
 						{
@@ -131,7 +133,34 @@
 						{
 							$('#sick-tel,#sick-tel-summary').html('<b>Call: '+phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'</b>');
 						}
+						
 						$('#sick').show();
+						
+						// Is this a school action school?
+						if(Application.Schools[i].data.closing === 'Closing')
+						{
+							$('#closing').remove();
+							$('<div id=closing><br><span class="label label-important middle">Closing in 2013-14. <a href="http://www.cps.edu/qualityschools/pages/schools.aspx" target="_blank" style="color:white">Click here for more information</a></span></div>').insertAfter('#sick');
+						}
+						else if(Application.Schools[i].data.closing === 'Relocating')
+						{
+							$('#closing').remove();
+							$('<div id=closing><br><span class="label label-important middle">Relocating in 2013-14. <a href="http://www.cps.edu/qualityschools/pages/schools.aspx" target="_blank" style="color:white">Click here for more information</a></span></div>').insertAfter('#sick');
+						}
+						else if(Application.Schools[i].data.closing === 'Co-locating')
+						{
+							$('#closing').remove();
+							$('<div id=closing><br><span class="label label-important middle">Co-locating in 2013-14. <a href="http://www.cps.edu/qualityschools/pages/schools.aspx" target="_blank" style="color:white">Click here for more information</a></span></div>').insertAfter('#sick');
+						}
+						else if(Application.Schools[i].data.closing === 'Turnaround')
+						{
+							$('#closing').remove();
+							$('<div id=closing><br><span class="label label-important middle">Turnaround in 2013-14. <a href="http://www.cps.edu/qualityschools/pages/schools.aspx" target="_blank" style="color:white">Click here for more information</a></span></div>').insertAfter('#sick');
+						}
+						else
+						{
+							$('#closing').remove();
+						}
 					}
 					else
 					{
@@ -605,7 +634,6 @@
 					Application.SchoolSelected = Schools[i];
 					$('#summary-school').text(Schools[i].data.longname);
 					$('#school').val(Schools[i].data.longname);
-					console.log(Application.SchoolSelected.data.start.length);
 					if(Application.SchoolSelected.data.start.length > 0)
 					{
 						$('#time-nobtns').hide();
@@ -660,11 +688,9 @@
 			}
 			else
 			{
-				console.log(Application.twodays);
 				unixtime = Date.parse(Application.twodays+' '+userTime).getTime();
 			}
 			var transitOptions = {};
-			console.log(Application.leaverightnow);
 			if(Application.leaverightnow === false)
 			{
 				transitOptions = {
