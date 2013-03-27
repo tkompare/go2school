@@ -580,7 +580,7 @@
 					{
 						Application.Map.setTouchScroll(false);
 					}
-					$('#before-map,#div-footer,#grp-directions').hide(750,function(){
+					$('#before-map,#div-footer,#grp-directions').hide(0,function(){
 						$('#map-width').css('height','100%');
 						$('#map-ratio').css('margin-top', $(window).height());
 						controlUI.title = 'Click to close up the map.';
@@ -604,7 +604,7 @@
 					{
 						Application.Map.setTouchScroll(true);
 					}
-					$('#before-map,#div-footer,#grp-directions').show(750,function(){
+					$('#before-map,#div-footer,#grp-directions').show(0,function(){
 						$('#map-width').css('height','');
 						$('#map-ratio').css('margin-top','200px');
 						controlUI.title = 'Click to interact with the map.';
