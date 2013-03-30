@@ -140,22 +140,22 @@
 						if(Application.Schools[i].data.closing === 'Closing')
 						{
 							$('#closing').remove();
-							$('<div id=closing><br><span class="label label-important middle">Closing in 2013-14. <a href="http://www.cps.edu/qualityschools/pages/schools.aspx" target="_blank" style="color:white">Click here for more information</a></span></div>').insertAfter('#sick');
+							$('<div id=closing><br><span class="label label-important middle">Closing in 2013-14. <a href="http://www.cps.edu/qualityschools/pages/schools.aspx?s='+Application.Schools[i].data.schoolid+'" target="_blank" style="color:white">Click here for more information</a></span></div>').insertAfter('#sick');
 						}
 						else if(Application.Schools[i].data.closing === 'Relocating')
 						{
 							$('#closing').remove();
-							$('<div id=closing><br><span class="label label-important middle">Relocating in 2013-14. <a href="http://www.cps.edu/qualityschools/pages/schools.aspx" target="_blank" style="color:white">Click here for more information</a></span></div>').insertAfter('#sick');
+							$('<div id=closing><br><span class="label label-important middle">Relocating in 2013-14. <a href="http://www.cps.edu/qualityschools/pages/schools.aspx?s='+Application.Schools[i].data.schoolid+'" target="_blank" style="color:white">Click here for more information</a></span></div>').insertAfter('#sick');
 						}
 						else if(Application.Schools[i].data.closing === 'Co-locating')
 						{
 							$('#closing').remove();
-							$('<div id=closing><br><span class="label label-important middle">Co-locating in 2013-14. <a href="http://www.cps.edu/qualityschools/pages/schools.aspx" target="_blank" style="color:white">Click here for more information</a></span></div>').insertAfter('#sick');
+							$('<div id=closing><br><span class="label label-important middle">Co-locating in 2013-14. <a href="http://www.cps.edu/qualityschools/pages/schools.aspx?s='+Application.Schools[i].data.schoolid+'" target="_blank" style="color:white">Click here for more information</a></span></div>').insertAfter('#sick');
 						}
 						else if(Application.Schools[i].data.closing === 'Turnaround')
 						{
 							$('#closing').remove();
-							$('<div id=closing><br><span class="label label-important middle">Turnaround in 2013-14. <a href="http://www.cps.edu/qualityschools/pages/schools.aspx" target="_blank" style="color:white">Click here for more information</a></span></div>').insertAfter('#sick');
+							$('<div id=closing><br><span class="label label-important middle">Turnaround in 2013-14. <a href="http://www.cps.edu/qualityschools/pages/schools.aspx?s='+Application.Schools[i].data.schoolid+'" target="_blank" style="color:white">Click here for more information</a></span></div>').insertAfter('#sick');
 						}
 						else
 						{
@@ -246,28 +246,28 @@
 					Application.Schools[i].infoboxtext = '<div class="infoBox" style="border:2px solid rgb(0,0,0); margin-top:8px; background:rgb(82,1,137); padding:5px; color:white; font-size:90%;">'+
 					Application.Schools[i].data.longname+'<br>'+
 					Application.Schools[i].data.address+'<br>'+
-					phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'<br /><b>CLOSING</b><br><a style="color:#ffc" href="http://cps.edu/qualityschools/pages/schools.aspx" target="_blank">Click for more information</a></div>';
+					phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'<br /><b>CLOSING</b><br><a style="color:#ffc" href="http://cps.edu/qualityschools/pages/schools.aspx?s='+Application.Schools[i].data.schoolid+'" target="_blank">Click for more information</a></div>';
 				}
 				else if(Application.Schools[i].data.closing === 'Relocating')
 				{
 					Application.Schools[i].infoboxtext = '<div class="infoBox" style="border:2px solid rgb(0,0,0); margin-top:8px; background:rgb(82,1,137); padding:5px; color:white; font-size:90%;">'+
 					Application.Schools[i].data.longname+'<br>'+
 					Application.Schools[i].data.address+'<br>'+
-					phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'<br /><b>RELOCATING</b><br><a style="color:#ffc" href="http://cps.edu/qualityschools/pages/schools.aspx" target="_blank">Click for more information</a></div>';
+					phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'<br /><b>RELOCATING</b><br><a style="color:#ffc" href="http://cps.edu/qualityschools/pages/schools.aspx?s='+Application.Schools[i].data.schoolid+'" target="_blank">Click for more information</a></div>';
 				}
 				else if(Application.Schools[i].data.closing === 'Co-locating')
 				{
 					Application.Schools[i].infoboxtext = '<div class="infoBox" style="border:2px solid rgb(0,0,0); margin-top:8px; background:rgb(102,178,255); padding:5px; color:black; font-size:90%;">'+
 					Application.Schools[i].data.longname+'<br>'+
 					Application.Schools[i].data.address+'<br>'+
-					phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'<br><b>CO-LOCATING</b><br><a href="http://cps.edu/qualityschools/pages/schools.aspx" target="_blank">Click for more information</a></div>';
+					phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'<br><b>CO-LOCATING</b><br><a href="http://cps.edu/qualityschools/pages/schools.aspx?s='+Application.Schools[i].data.schoolid+'" target="_blank">Click for more information</a></div>';
 				}
 				else if(Application.Schools[i].data.closing === 'Turnaround')
 				{
 					Application.Schools[i].infoboxtext = '<div class="infoBox" style="border:2px solid rgb(0,0,0); margin-top:8px; background:rgb(1,82,137); padding:5px; color:white; font-size:90%;">'+
 					Application.Schools[i].data.longname+'<br>'+
 					Application.Schools[i].data.address+'<br>'+
-					phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'<br><b>TURNAROUND</b><br><a style="color:#ffc" href="http://cps.edu/qualityschools/pages/schools.aspx" target="_blank">Click for more information</a></div>';
+					phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'<br><b>TURNAROUND</b><br><a style="color:#ffc" href="http://cps.edu/qualityschools/pages/schools.aspx?s='+Application.Schools[i].data.schoolid+'" target="_blank">Click for more information</a></div>';
 				}
 				var options = Default.infoboxoptions;
 				options.content = Application.Schools[i].infoboxtext;
@@ -913,6 +913,11 @@
 		var SafeFT = new FusionTable(Default.fturl,Default.safelocationquery,Default.googlemapsapikey);
 		if(Application.localStorage)
 		{
+			// Reset all TTLs
+			$.jStorage.deleteKey(Default.storagePrefix+'school');
+			$.jStorage.deleteKey(Default.storagePrefix+'schoolftcolumns');
+			$.jStorage.deleteKey(Default.storagePrefix+'schoolftrows');
+			//
 			$('#school').val($.jStorage.get(Default.storagePrefix+'school',''));
 			$('#summary-school').text($.jStorage.get(Default.storagePrefix+'school',''));
 			$('#time').val($.jStorage.get(Default.storagePrefix+'time',''));
