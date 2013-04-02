@@ -137,25 +137,26 @@
 						$('#sick').show();
 						
 						// Is this a school action school?
+						var closingtxt = ' in 2013-14. <a href="http://www.cps.edu/qualityschools/pages/schools.aspx?s='+Application.Schools[i].data.schoolid+'" target="_blank">Click here for information</a></div>';
 						if(Application.Schools[i].data.closing === 'Closing')
 						{
 							$('#closing').remove();
-							$('<div id=closing><br><span class="label label-important middle">Closing in 2013-14. <a href="http://www.cps.edu/qualityschools/pages/schools.aspx?s='+Application.Schools[i].data.schoolid+'" target="_blank" style="color:white">Click here for more information</a></span></div>').insertAfter('#sick');
+							$('<div id=closing><br>Closing'+closingtxt).insertAfter('#sick');
 						}
 						else if(Application.Schools[i].data.closing === 'Relocating')
 						{
 							$('#closing').remove();
-							$('<div id=closing><br><span class="label label-important middle">Relocating in 2013-14. <a href="http://www.cps.edu/qualityschools/pages/schools.aspx?s='+Application.Schools[i].data.schoolid+'" target="_blank" style="color:white">Click here for more information</a></span></div>').insertAfter('#sick');
+							$('<div id=closing><br>Relocating'+closingtxt).insertAfter('#sick');
 						}
 						else if(Application.Schools[i].data.closing === 'Co-locating')
 						{
 							$('#closing').remove();
-							$('<div id=closing><br><span class="label label-important middle">Co-locating in 2013-14. <a href="http://www.cps.edu/qualityschools/pages/schools.aspx?s='+Application.Schools[i].data.schoolid+'" target="_blank" style="color:white">Click here for more information</a></span></div>').insertAfter('#sick');
+							$('<div id=closing><br>Co-locating'+closingtxt).insertAfter('#sick');
 						}
 						else if(Application.Schools[i].data.closing === 'Turnaround')
 						{
 							$('#closing').remove();
-							$('<div id=closing><br><span class="label label-important middle">Turnaround in 2013-14. <a href="http://www.cps.edu/qualityschools/pages/schools.aspx?s='+Application.Schools[i].data.schoolid+'" target="_blank" style="color:white">Click here for more information</a></span></div>').insertAfter('#sick');
+							$('<div id=closing><br>Turnaround'+closingtxt).insertAfter('#sick');
 						}
 						else
 						{
@@ -187,87 +188,65 @@
 				// Create the Google LatLng object
 				Application.Schools[i].latlng = new google.maps.LatLng(Application.Schools[i].data.lat,Application.Schools[i].data.lng);
 				// Create the markers for each school
+				var SchoolMarkerOptions = {
+					position: Application.Schools[i].latlng,
+					map: Application.Map.Map,
+					shadow:'img/msmarker.shadow.png'
+				};
 				if (Application.Schools[i].data.closing == 'Closing')
 				{
-					Application.Schools[i].marker = new google.maps.Marker({
-						position: Application.Schools[i].latlng,
-						map: Application.Map.Map,
-						icon:'img/purple-dot.png',
-						shadow:'img/msmarker.shadow.png'
-					});
+					SchoolMarkerOptions.icon = 'img/purple-dot.png';
+					Application.Schools[i].marker = new google.maps.Marker(SchoolMarkerOptions);
 				}
 				else if(Application.Schools[i].data.closing == 'Relocating')
 				{
-					Application.Schools[i].marker = new google.maps.Marker({
-						position: Application.Schools[i].latlng,
-						map: Application.Map.Map,
-						icon:'img/purple.png',
-						shadow:'img/msmarker.shadow.png'
-					});
+					SchoolMarkerOptions.icon = 'img/purple.png';
+					Application.Schools[i].marker = new google.maps.Marker(SchoolMarkerOptions);
 				}
 				else if(Application.Schools[i].data.closing == 'Co-locating')
 				{
-					Application.Schools[i].marker = new google.maps.Marker({
-						position: Application.Schools[i].latlng,
-						map: Application.Map.Map,
-						icon:'img/blue.png',
-						shadow:'img/msmarker.shadow.png'
-					});
+					SchoolMarkerOptions.icon = 'img/blue.png';
+					Application.Schools[i].marker = new google.maps.Marker(SchoolMarkerOptions);
 				}
 				else if(Application.Schools[i].data.closing == 'Turnaround')
 				{
-					Application.Schools[i].marker = new google.maps.Marker({
-						position: Application.Schools[i].latlng,
-						map: Application.Map.Map,
-						icon:'img/orange-dot.png',
-						shadow:'img/msmarker.shadow.png'
-					});
+					SchoolMarkerOptions.icon = 'img/orange-dot.png';
+					Application.Schools[i].marker = new google.maps.Marker(SchoolMarkerOptions);
 				}
 				else
 				{
-					Application.Schools[i].marker = new google.maps.Marker({
-						position: Application.Schools[i].latlng,
-						map: Application.Map.Map,
-						icon:'img/orange.png',
-						shadow:'img/msmarker.shadow.png'
-					});
+					SchoolMarkerOptions.icon = 'img/orange.png';
+					Application.Schools[i].marker = new google.maps.Marker(SchoolMarkerOptions);
 				}
 				// Info boxes
 				var phone = String(Application.Schools[i].data.phone).replace('/[^0-9]/','');
+				var infoboxprefix = '<div class="infoBox" style="border:2px solid rgb(0,0,0); margin-top:8px; padding:5px;font-size:90%; ';
+				var infoboxtext = Application.Schools[i].data.longname+'<br>'+Application.Schools[i].data.address+'<br>'+phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'<br>';
+				var inforboxtextsuffix = 'href="http://cps.edu/qualityschools/pages/schools.aspx?s='+Application.Schools[i].data.schoolid+'" target="_blank">Click for more information</a></div>';
 				if(Application.Schools[i].data.closing === '')
 				{
-					Application.Schools[i].infoboxtext = '<div class="infoBox" style="border:2px solid rgb(0,0,0); margin-top:8px; background:rgb(1,82,137); padding:5px; color:white; font-size:90%;">'+
-					Application.Schools[i].data.longname+'<br>'+
-					Application.Schools[i].data.address+'<br>'+
-					phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'<br></div>';
+					Application.Schools[i].infoboxtext = infoboxprefix+'background:rgb(1,82,137); color:white">'+
+					infoboxtext+'</div>';
 				}
 				else if(Application.Schools[i].data.closing === 'Closing')
 				{
-					Application.Schools[i].infoboxtext = '<div class="infoBox" style="border:2px solid rgb(0,0,0); margin-top:8px; background:rgb(82,1,137); padding:5px; color:white; font-size:90%;">'+
-					Application.Schools[i].data.longname+'<br>'+
-					Application.Schools[i].data.address+'<br>'+
-					phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'<br /><b>CLOSING</b><br><a style="color:#ffc" href="http://cps.edu/qualityschools/pages/schools.aspx?s='+Application.Schools[i].data.schoolid+'" target="_blank">Click for more information</a></div>';
+					Application.Schools[i].infoboxtext = infoboxprefix+'background:rgb(82,1,137); color:white">'+
+					infoboxtext+'<b>CLOSING</b><br><a style="color:#ffc" '+inforboxtextsuffix;
 				}
 				else if(Application.Schools[i].data.closing === 'Relocating')
 				{
-					Application.Schools[i].infoboxtext = '<div class="infoBox" style="border:2px solid rgb(0,0,0); margin-top:8px; background:rgb(82,1,137); padding:5px; color:white; font-size:90%;">'+
-					Application.Schools[i].data.longname+'<br>'+
-					Application.Schools[i].data.address+'<br>'+
-					phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'<br /><b>RELOCATING</b><br><a style="color:#ffc" href="http://cps.edu/qualityschools/pages/schools.aspx?s='+Application.Schools[i].data.schoolid+'" target="_blank">Click for more information</a></div>';
+					Application.Schools[i].infoboxtext = infoboxprefix+'background:rgb(82,1,137); color:white">'+
+					infoboxtext+'<b>RELOCATING</b><br><a style="color:#ffc" '+inforboxtextsuffix;
 				}
 				else if(Application.Schools[i].data.closing === 'Co-locating')
 				{
-					Application.Schools[i].infoboxtext = '<div class="infoBox" style="border:2px solid rgb(0,0,0); margin-top:8px; background:rgb(102,178,255); padding:5px; color:black; font-size:90%;">'+
-					Application.Schools[i].data.longname+'<br>'+
-					Application.Schools[i].data.address+'<br>'+
-					phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'<br><b>CO-LOCATING</b><br><a href="http://cps.edu/qualityschools/pages/schools.aspx?s='+Application.Schools[i].data.schoolid+'" target="_blank">Click for more information</a></div>';
+					Application.Schools[i].infoboxtext = infoboxprefix+'background:rgb(102,178,255); color:black">'+
+					infoboxtext+'<b>CO-LOCATING</b><br><a '+inforboxtextsuffix;
 				}
 				else if(Application.Schools[i].data.closing === 'Turnaround')
 				{
-					Application.Schools[i].infoboxtext = '<div class="infoBox" style="border:2px solid rgb(0,0,0); margin-top:8px; background:rgb(1,82,137); padding:5px; color:white; font-size:90%;">'+
-					Application.Schools[i].data.longname+'<br>'+
-					Application.Schools[i].data.address+'<br>'+
-					phone.slice(-10,-7)+'-'+phone.slice(-7,-4)+'-'+phone.slice(-4)+'<br><b>TURNAROUND</b><br><a style="color:#ffc" href="http://cps.edu/qualityschools/pages/schools.aspx?s='+Application.Schools[i].data.schoolid+'" target="_blank">Click for more information</a></div>';
+					Application.Schools[i].infoboxtext = infoboxprefix+'background:rgb(1,82,137); color:white">'+
+					infoboxtext+'<b>TURNAROUND</b><br><a style="color:#ffc" '+inforboxtextsuffix;
 				}
 				var options = Default.infoboxoptions;
 				options.content = Application.Schools[i].infoboxtext;
@@ -315,37 +294,29 @@
 				}
 				// Create the Google LatLng object
 				Application.SafeLocations[i].latlng = new google.maps.LatLng(Application.SafeLocations[i].data.lat,Application.SafeLocations[i].data.lng);
-				// Create the markers for each school
+				// Create the markers for each safe location type
+				var SafeMarkerOptions = {
+					position: Application.SafeLocations[i].latlng,
+					map: Application.Map.Map
+				};
 				if(Application.SafeLocations[i].data.type === 'police station')
 				{
-					Application.SafeLocations[i].marker = new google.maps.Marker({
-						position: Application.SafeLocations[i].latlng,
-						map: Application.Map.Map,
-						icon:'img/police.png'
-					});
+					SafeMarkerOptions.icon = 'img/police.png';
+					Application.SafeLocations[i].marker = new google.maps.Marker(SafeMarkerOptions);
 				}
 				else if (Application.SafeLocations[i].data.type === 'fire station')
 				{
-					Application.SafeLocations[i].marker = new google.maps.Marker({
-						position: Application.SafeLocations[i].latlng,
-						map: Application.Map.Map,
-						icon:'img/fire.png'
-					});
+					SafeMarkerOptions.icon = 'img/fire.png';
+					Application.SafeLocations[i].marker = new google.maps.Marker(SafeMarkerOptions);
 				}
 				else if (Application.SafeLocations[i].data.type === 'hospital')
 				{
-					Application.SafeLocations[i].marker = new google.maps.Marker({
-						position: Application.SafeLocations[i].latlng,
-						map: Application.Map.Map,
-						icon:'img/hosp.png'
-					});
+					SafeMarkerOptions.icon = 'img/hosp.png';
+					Application.SafeLocations[i].marker = new google.maps.Marker(SafeMarkerOptions);
 				}
 				else
 				{
-					Application.SafeLocations[i].marker = new google.maps.Marker({
-						position: Application.SafeLocations[i].latlng,
-						map: Application.Map.Map
-					});
+					Application.SafeLocations[i].marker = new google.maps.Marker(SafeMarkerOptions);
 				}
 				// Info boxes
 				var phone = String(Application.SafeLocations[i].data.phone).replace(/[^0-9]/g,'');
@@ -420,9 +391,9 @@
 					Default.schooltwodays = Application.Schedules[i].data.unifiedcalendar;
 				}
 			}
+			/*
 			function checkSchedule(dateType,date,domId)
-			{
-			/*	
+			{	
 				if(dateType === 'Full Day')
 				{
 					$('#'+domId).html(dateType+' '+date);
@@ -435,10 +406,10 @@
 				{
 					$('#'+domId).html(dateType+' '+date).addClass('text-warning');
 				}
-				*/
 			}
 			checkSchedule(Default.schooltoday,'Today','schedule');
 			checkSchedule(Default.schooltomorrow,'Tomorrow','schedule-tomorrow');
+			*/
 		}
 		
 		/**
@@ -914,7 +885,7 @@
 		if(Application.localStorage)
 		{
 			// Reset all TTLs
-			$.jStorage.deleteKey(Default.storagePrefix+'school');
+			// $.jStorage.deleteKey(Default.storagePrefix+'school');
 			$.jStorage.deleteKey(Default.storagePrefix+'schoolftcolumns');
 			$.jStorage.deleteKey(Default.storagePrefix+'schoolftrows');
 			//

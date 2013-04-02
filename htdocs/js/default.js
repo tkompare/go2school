@@ -28,12 +28,12 @@ var Default = {
 	infoboxoptions:{
 		disableAutoPan: false,
 		maxWidth: 0,
-		pixelOffset: new google.maps.Size(-140, 0),
+		pixelOffset: new google.maps.Size(-101, 0),
 		zIndex: null,
 		boxStyle: {
 			background: "url('img/tipbox.gif') no-repeat",
 			opacity: 0.92,
-			width: "160px"
+			width: "200px"
 		},
 		closeBoxMargin: "11px 4px 4px 4px",
 		closeBoxURL: "img/close.gif",
